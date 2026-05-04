@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -25,13 +24,10 @@ class MyHeader extends StatelessWidget {
                   top: 15 * s,
                   child: GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: Transform.rotate(
-                      angle: math.pi,
-                      child: Image.asset(
-                        'assets/arrow_back.png',
-                        width: 25 * s,
-                        height: 25 * s,
-                      ),
+                    child: Image.asset(
+                      'assets/arrow_back.png',
+                      width: 25 * s,
+                      height: 25 * s,
                     ),
                   ),
                 ),
