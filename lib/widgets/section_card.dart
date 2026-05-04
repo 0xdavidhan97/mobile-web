@@ -19,7 +19,7 @@ class SectionCard extends StatelessWidget {
     final double s = screenWidth / 390;
 
     return Container(
-      width: 365 * s,
+      width: double.infinity,
       height: height * s,
       decoration: BoxDecoration(
         color: Colors.white,

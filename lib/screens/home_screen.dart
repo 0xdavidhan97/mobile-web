@@ -64,7 +64,7 @@ class _SectionCardRow extends StatelessWidget {
     final double s = screenWidth / 390;
 
     return Padding(
-      padding: EdgeInsets.only(left: 12 * s, top: 13 * s),
+      padding: EdgeInsets.fromLTRB(12 * s, 13 * s, 12 * s, 0),
       child: child,
     );
   }
