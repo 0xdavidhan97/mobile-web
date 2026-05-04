@@ -28,7 +28,7 @@ class MyHeader extends StatelessWidget {
                     child: Transform.rotate(
                       angle: math.pi,
                       child: Image.asset(
-                        'assets/image2821.png',
+                        'assets/arrow_back.png',
                         width: 25 * s,
                         height: 25 * s,
                       ),
