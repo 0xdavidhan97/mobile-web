@@ -12,7 +12,7 @@ class MyPage extends StatelessWidget {
     final double s = MediaQuery.of(context).size.width / 390;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
           const MyHeader(),
