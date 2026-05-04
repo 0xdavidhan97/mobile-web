@@ -22,7 +22,7 @@ class BannerSection extends StatelessWidget {
               '코박을\n안전하게',
               style: GoogleFonts.inter(
                 fontSize: 14 * s,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
                 height: 17 / 14,
                 color: Colors.black,
               ),
