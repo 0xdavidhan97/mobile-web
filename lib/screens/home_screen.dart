@@ -3,6 +3,7 @@ import '../widgets/app_header.dart';
 import '../widgets/banner_section.dart';
 import '../widgets/info_card.dart';
 import '../widgets/section_card.dart';
+import '../widgets/ranking_card.dart';
 import '../widgets/bottom_nav_bar.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -21,8 +22,8 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   const BannerSection(),
                   _CardsRow(),
-                  _SectionCardRow(child: const SectionCard(title: '주요 서비스', height: 136)),
-                  _SectionCardRow(child: const SectionCard(title: '인기 검색 순위', height: 441)),
+                  _cardPadding(const ServiceCard()),
+                  _cardPadding(const RankingCard()),
                   const SizedBox(height: 20),
                 ],
               ),
@@ -33,39 +34,44 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _cardPadding(Widget child) {
+    return Builder(
+      builder: (context) {
+        final double s = MediaQuery.of(context).size.width / 390;
+        return Padding(
+          padding: EdgeInsets.fromLTRB(12 * s, 13 * s, 12 * s, 0),
+          child: child,
+        );
+      },
+    );
+  }
 }
 
 class _CardsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double s = screenWidth / 390;
+    final double s = MediaQuery.of(context).size.width / 390;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(12 * s, 0, 12 * s, 0),
       child: Row(
         children: [
-          const InfoCard(title: '공포탐욕지수'),
+          const InfoCard(
+            title: '공포탐욕지수',
+            value: '40%',
+            subtext: '공포',
+            subtextColor: Color(0xFFFF6A0D),
+          ),
           SizedBox(width: 14 * s),
-          const InfoCard(title: '김치프리미엄'),
+          const InfoCard(
+            title: '김치프리미엄',
+            value: '0.26%',
+            subtext: '정상',
+            subtextColor: Color(0xFFFF3E0D),
+          ),
         ],
       ),
-    );
-  }
-}
-
-class _SectionCardRow extends StatelessWidget {
-  final Widget child;
-  const _SectionCardRow({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double s = screenWidth / 390;
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(12 * s, 13 * s, 12 * s, 0),
-      child: child,
     );
   }
 }
