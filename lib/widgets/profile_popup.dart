@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../screens/my_page.dart';
 
 class ProfilePopup extends StatelessWidget {
-  const ProfilePopup({super.key});
+  final VoidCallback? onClose;
+
+  const ProfilePopup({super.key, this.onClose});
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +67,18 @@ class ProfilePopup extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _MenuItem(label: '마이페이지 이동', color: const Color(0xFF4E4E4E), s: s),
+                _MenuItem(
+                  label: '마이페이지 이동',
+                  color: const Color(0xFF4E4E4E),
+                  s: s,
+                  onTap: () {
+                    onClose?.call();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MyPage()),
+                    );
+                  },
+                ),
                 _MenuItem(label: '내 스페이스 이동', color: const Color(0xFF4E4E4E), s: s),
                 _MenuItem(label: '계정 및 보안', color: const Color(0xFF4E4E4E), s: s),
                 _MenuItem(label: '로그아웃', color: const Color(0xFFFF4E4E), s: s),
@@ -81,17 +95,19 @@ class _MenuItem extends StatelessWidget {
   final String label;
   final Color color;
   final double s;
+  final VoidCallback? onTap;
 
   const _MenuItem({
     required this.label,
     required this.color,
     required this.s,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Text(
         label,
         style: GoogleFonts.inter(

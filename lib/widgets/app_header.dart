@@ -35,9 +35,9 @@ class _AppHeaderState extends State<AppHeader> {
           Positioned(
             top: topPadding + 47 * s,
             right: 22 * s,
-            child: const Material(
+            child: Material(
               color: Colors.transparent,
-              child: ProfilePopup(),
+              child: ProfilePopup(onClose: _hidePopup),
             ),
           ),
         ],
