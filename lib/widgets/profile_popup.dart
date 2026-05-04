@@ -26,7 +26,6 @@ class ProfilePopup extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 프로필 섹션
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -41,6 +40,7 @@ class ProfilePopup extends StatelessWidget {
                       fontSize: 9 * s,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF096BFF),
+                      decoration: TextDecoration.none,
                     ),
                   ),
                   SizedBox(height: 2 * s),
@@ -50,6 +50,7 @@ class ProfilePopup extends StatelessWidget {
                       fontSize: 11 * s,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF272727),
+                      decoration: TextDecoration.none,
                     ),
                   ),
                 ],
@@ -58,7 +59,6 @@ class ProfilePopup extends StatelessWidget {
           ),
           SizedBox(height: 12 * s),
           Divider(height: 1, thickness: 1 * s, color: const Color(0xFFEEEEEE)),
-          // 메뉴 아이템
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -98,6 +98,7 @@ class _MenuItem extends StatelessWidget {
           fontSize: 12 * s,
           fontWeight: FontWeight.w600,
           color: color,
+          decoration: TextDecoration.none,
         ),
       ),
     );
