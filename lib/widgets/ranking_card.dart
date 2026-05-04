@@ -19,7 +19,7 @@ class RankingCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 타이틀
+          // 타이틀 — card top 18px
           Padding(
             padding: EdgeInsets.fromLTRB(20 * s, 18 * s, 0, 0),
             child: Text(
@@ -32,8 +32,8 @@ class RankingCard extends StatelessWidget {
               ),
             ),
           ),
+          // gap 7 → subtext top 42
           SizedBox(height: 7 * s),
-          // 서브텍스트
           Padding(
             padding: EdgeInsets.only(left: 24 * s),
             child: Text(
@@ -45,11 +45,16 @@ class RankingCard extends StatelessWidget {
               ),
             ),
           ),
+          // gap 26 → item 1 top 79 (564-485=79 ✓)
           SizedBox(height: 26 * s),
-          // 순위 리스트 1~8
-          ...List.generate(8, (i) => _RankingItem(rank: i + 1, s: s)),
+          // 아이템 1~8: 각 15px, 아이템 사이 26px 간격
+          // 마지막 아이템 하단 패딩 없음 → item 8 ends at 381
+          for (int i = 0; i < 8; i++) ...[
+            _RankingItem(rank: i + 1, s: s),
+            if (i < 7) SizedBox(height: 26 * s),
+          ],
+          // gap 16 → 더보기 버튼 top 397 (882-485=397 ✓)
           SizedBox(height: 16 * s),
-          // 더보기 버튼
           Center(
             child: Container(
               width: 314 * s,
@@ -84,7 +89,7 @@ class _RankingItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 20 * s, bottom: 26 * s),
+      padding: EdgeInsets.only(left: 20 * s),
       child: Text(
         '$rank',
         style: GoogleFonts.inter(
