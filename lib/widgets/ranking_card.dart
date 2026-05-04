@@ -16,12 +16,12 @@ class RankingCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(10 * s),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          // 타이틀 — card top 18px
-          Padding(
-            padding: EdgeInsets.fromLTRB(20 * s, 18 * s, 0, 0),
+          // 타이틀 — left:20, top:18
+          Positioned(
+            left: 20 * s,
+            top: 18 * s,
             child: Text(
               '인기 검색 순위',
               style: GoogleFonts.inter(
@@ -32,10 +32,10 @@ class RankingCard extends StatelessWidget {
               ),
             ),
           ),
-          // gap 7 → subtext top 42
-          SizedBox(height: 7 * s),
-          Padding(
-            padding: EdgeInsets.only(left: 24 * s),
+          // 서브텍스트 — left:24, top:42
+          Positioned(
+            left: 24 * s,
+            top: 42 * s,
             child: Text(
               '일일 검색량 기준 가장 많이 검색된 코인 순위',
               style: GoogleFonts.inter(
@@ -45,24 +45,32 @@ class RankingCard extends StatelessWidget {
               ),
             ),
           ),
-          // gap 26 → item 1 top 79 (564-485=79 ✓)
-          SizedBox(height: 26 * s),
-          // 아이템 1~8: 각 15px, 아이템 사이 26px 간격
-          // 마지막 아이템 하단 패딩 없음 → item 8 ends at 381
-          for (int i = 0; i < 8; i++) ...[
-            _RankingItem(rank: i + 1, s: s),
-            if (i < 7) SizedBox(height: 26 * s),
-          ],
-          // gap 16 → 더보기 버튼 top 397 (882-485=397 ✓)
-          SizedBox(height: 16 * s),
-          Center(
+          // 순위 1~8 — left:20, top: 79 + i*41
+          for (int i = 0; i < 8; i++)
+            Positioned(
+              left: 20 * s,
+              top: (79 + i * 41) * s,
+              child: Text(
+                '${i + 1}',
+                style: GoogleFonts.inter(
+                  fontSize: 12 * s,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          // 더보기 버튼 — top:397, left:26, right:26, height:44 (bottom:22)
+          Positioned(
+            top: 397 * s,
+            left: 26 * s,
+            right: 26 * s,
             child: Container(
-              width: 314 * s,
               height: 44 * s,
               decoration: BoxDecoration(
                 color: const Color(0xFFF2F2F2),
                 borderRadius: BorderRadius.circular(10 * s),
               ),
+              // 더보기 텍스트: 버튼 기준 top:14, left:140 → 중앙 정렬과 일치
               alignment: Alignment.center,
               child: Text(
                 '더보기',
@@ -75,28 +83,6 @@ class RankingCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _RankingItem extends StatelessWidget {
-  final int rank;
-  final double s;
-
-  const _RankingItem({required this.rank, required this.s});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(left: 20 * s),
-      child: Text(
-        '$rank',
-        style: GoogleFonts.inter(
-          fontSize: 12 * s,
-          fontWeight: FontWeight.w700,
-          color: Colors.black,
-        ),
       ),
     );
   }
