@@ -44,15 +44,6 @@ class MyHeader extends StatelessWidget {
                     ),
                   ),
                 ),
-                Positioned(
-                  left: 346 * s,
-                  top: 17 * s,
-                  child: Image.asset(
-                    'assets/profile.png',
-                    width: 22 * s,
-                    height: 22 * s,
-                  ),
-                ),
               ],
             ),
           ),

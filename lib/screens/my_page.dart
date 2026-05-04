@@ -249,12 +249,6 @@ class _ProfileCard extends StatelessWidget {
               ),
             ),
           ),
-          // image2823 (화살표): top 30, left 322
-          Positioned(
-            top: 30 * s,
-            left: 322 * s,
-            child: Image.asset('assets/image2823.png', width: 12 * s, height: 12 * s),
-          ),
           // 내 지갑 label: top 79, left 21
           Positioned(
             top: 79 * s,
@@ -276,23 +270,19 @@ class _ProfileCard extends StatelessWidget {
             child: Container(
               width: 77 * s,
               height: 37 * s,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: const Color(0xFF2C76E1),
                 borderRadius: BorderRadius.circular(10 * s),
               ),
-            ),
-          ),
-          // 지갑 연결 text: top 90, left 275
-          Positioned(
-            top: 90 * s,
-            left: 275 * s,
-            child: Text(
-              '지갑 연결',
-              style: GoogleFonts.inter(
-                fontSize: 13 * s,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                decoration: TextDecoration.none,
+              child: Text(
+                '지갑 연결',
+                style: GoogleFonts.inter(
+                  fontSize: 13 * s,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
+                ),
               ),
             ),
           ),
