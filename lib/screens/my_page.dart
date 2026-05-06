@@ -122,14 +122,11 @@ class _ShortcutCard extends StatelessWidget {
             left: 124 * s,
             child: Image.asset('assets/moneybag.png', width: 30 * s, height: 30 * s),
           ),
-          // stamp.png: top 18, left 207, rotate 31.33deg
+          // stamp2.png: top 21, left 206
           Positioned(
-            top: 18 * s,
-            left: 207 * s,
-            child: Transform.rotate(
-              angle: 31.33 * math.pi / 180,
-              child: Image.asset('assets/stamp.png', width: 24.93 * s, height: 24.93 * s),
-            ),
+            top: 21 * s,
+            left: 206 * s,
+            child: Image.asset('assets/stamp2.png', width: 27 * s, height: 27 * s),
           ),
           // wallet2.png: top 21, left 289
           Positioned(
