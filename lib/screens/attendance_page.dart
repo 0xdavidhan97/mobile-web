@@ -630,7 +630,7 @@ class _AttendancePageState extends State<AttendancePage> {
           Positioned(
             top: 92 * s,
             left: 27 * s,
-            child: Image.asset('assets/image2834.png', width: 22 * s, height: 22 * s),
+            child: Image.asset('assets/comment.png', width: 22 * s, height: 22 * s),
           ),
           Positioned(
             top: 94 * s,
@@ -662,7 +662,7 @@ class _AttendancePageState extends State<AttendancePage> {
           Positioned(
             top: 131 * s,
             left: 27 * s,
-            child: Image.asset('assets/image2833.png', width: 22 * s, height: 22 * s),
+            child: Image.asset('assets/chart.png', width: 22 * s, height: 22 * s),
           ),
           Positioned(
             top: 133 * s,
