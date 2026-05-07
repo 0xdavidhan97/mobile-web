@@ -809,30 +809,18 @@ class _AttendancePageState extends State<AttendancePage> {
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          height: (_isExpanded ? 133.0 : 31.0) * s,
+          height: (_isExpanded ? 133.0 : 23.0) * s,
           width: 390 * s,
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: const Color(0xFFF4F8FF),
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30 * s),
-              topRight: Radius.circular(30 * s),
+              topLeft: Radius.circular(20 * s),
+              topRight: Radius.circular(20 * s),
             ),
-            boxShadow: [
-              const BoxShadow(
-                color: Color.fromRGBO(166, 166, 166, 0.1),
-                blurRadius: 4,
-                spreadRadius: 2,
-                offset: Offset(0, -1),
-              ),
-              // 접힌 상태에서만 하단 드롭 섀도 추가
-              BoxShadow(
-                color: Color.fromRGBO(0, 0, 0, _isExpanded ? 0.0 : 0.25),
-                blurRadius: 4,
-                spreadRadius: 0,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: const Border(
+              top: BorderSide(color: Color(0xFFD9D9D9), width: 1),
+            ),
           ),
           child: OverflowBox(
             maxHeight: 133.0 * s,
@@ -856,28 +844,28 @@ class _AttendancePageState extends State<AttendancePage> {
                       ),
                     ),
                   ),
-                  // "0": top 11, left 248
+                  // "0": top 13, left 248
                   Positioned(
-                    top: 11 * s,
+                    top: 13 * s,
                     left: 248 * s,
                     child: Text(
                       '0',
                       style: GoogleFonts.inter(
-                        fontSize: 30 * s,
+                        fontSize: 27 * s,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF2D6CEB),
                         decoration: TextDecoration.none,
                       ),
                     ),
                   ),
-                  // "/ 2,000P": top 15, left 274
+                  // "/ 2,000P": top 16, left 275
                   Positioned(
-                    top: 15 * s,
-                    left: 274 * s,
+                    top: 16 * s,
+                    left: 275 * s,
                     child: Text(
                       '/ 2,000P',
                       style: GoogleFonts.inter(
-                        fontSize: 23 * s,
+                        fontSize: 21 * s,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF4B4B4B),
                         decoration: TextDecoration.none,
@@ -889,11 +877,16 @@ class _AttendancePageState extends State<AttendancePage> {
                     top: 52 * s,
                     left: 19 * s,
                     child: Container(
-                      width: 352 * s,
+                      width: 351 * s,
                       height: 9 * s,
                       decoration: BoxDecoration(
                         color: const Color(0xFFD9D9D9),
-                        borderRadius: BorderRadius.circular(10 * s),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20 * s),
+                          topRight: Radius.circular(20 * s),
+                          bottomLeft: Radius.circular(10 * s),
+                          bottomRight: Radius.circular(10 * s),
+                        ),
                       ),
                     ),
                   ),

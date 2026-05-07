@@ -1,5 +1,5 @@
-// ignore_for_file: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
@@ -7,10 +7,14 @@ import 'package:flutter/material.dart';
 /// Flutter Web이 MediaQuery.padding.bottom을 0으로 반환할 때 fallback으로 사용.
 double _cssSafeAreaBottom() {
   try {
-    final raw = html.window
-        .getComputedStyle(html.document.body!)
-        .paddingBottom
-        .trim(); // e.g., "34px" or "0px"
+    final doc = globalContext['document'];
+    if (doc == null) return 0;
+    final body = (doc as JSObject)['body'];
+    if (body == null) return 0;
+    final style = globalContext.callMethod<JSObject>('getComputedStyle'.toJS, body);
+    final pb = style['paddingBottom'];
+    if (pb == null) return 0;
+    final raw = (pb as JSString).toDart.trim();
     return double.tryParse(raw.replaceAll('px', '')) ?? 0;
   } catch (_) {
     return 0;
