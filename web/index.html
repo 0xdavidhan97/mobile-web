@@ -40,11 +40,16 @@
   <link rel="manifest" href="manifest.json">
 
   <style>
-    /* viewport-fit=cover 적용 시 노치/DI 영역 배경을 그라데이션 상단색과 맞춤 */
-    html, body {
+    html {
+      background-color: #CFE1FF;
+    }
+    body {
       margin: 0;
       padding: 0;
+      /* Safe Area: viewport-fit=cover 적용 시 DI/노치 영역 배경색 노출 */
       background-color: #CFE1FF;
+      /* env(safe-area-inset-top): Flutter Web이 MediaQuery.padding.top으로 직접 읽음 */
+      padding-top: env(safe-area-inset-top, 0px);
     }
   </style>
 </head>

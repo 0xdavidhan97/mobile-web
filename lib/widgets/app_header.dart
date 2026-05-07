@@ -64,13 +64,23 @@ class _AppHeaderState extends State<AppHeader> {
     final double screenWidth = MediaQuery.of(context).size.width;
     final double s = screenWidth / 390;
 
-    return Container(
-      color: Colors.white,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: topPadding),
-          SizedBox(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // DI 영역: 상태바(#CFE1FF)와 자연스럽게 연결되는 그라데이션
+        Container(
+          height: topPadding,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFCFE1FF), Colors.white],
+            ),
+          ),
+        ),
+        Container(
+          color: Colors.white,
+          child: SizedBox(
             height: 56 * s,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 12 * s),
@@ -97,8 +107,8 @@ class _AppHeaderState extends State<AppHeader> {
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
