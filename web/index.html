@@ -40,16 +40,11 @@
   <link rel="manifest" href="manifest.json">
 
   <style>
-    html {
-      background-color: #CFE1FF;
-    }
-    body {
+    html, body {
       margin: 0;
       padding: 0;
-      /* Safe Area: viewport-fit=cover 적용 시 DI/노치 영역 배경색 노출 */
-      background-color: #CFE1FF;
-      /* env(safe-area-inset-top): Flutter Web이 MediaQuery.padding.top으로 직접 읽음 */
-      padding-top: env(safe-area-inset-top, 0px);
+      /* Flutter가 MediaQuery.padding.top으로 safe area를 직접 처리하므로 CSS padding 불필요 */
+      background-color: #FFFFFF;
     }
   </style>
 </head>

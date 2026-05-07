@@ -12,16 +12,10 @@ class MyHeader extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // DI 영역: 상태바(#CFE1FF)와 자연스럽게 연결되는 그라데이션
+        // DI 영역: 흰색 단색
         Container(
           height: topPadding,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFFCFE1FF), Colors.white],
-            ),
-          ),
+          color: Colors.white,
         ),
         Container(
           color: Colors.white,
