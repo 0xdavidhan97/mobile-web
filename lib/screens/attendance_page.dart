@@ -446,7 +446,6 @@ class _AttendancePageState extends State<AttendancePage> {
   static const Map<int, String> _bonusPoints = {
     3: '50P', 7: '100P', 10: '150P', 14: '200P',
     17: '220P', 20: '250P', 25: '350P',
-    26: '100P', 27: '100P', 28: '100P', 29: '100P', 30: '100P',
   };
 
   static const Set<int> _starDays = {3, 7, 10, 14, 17, 20, 25};
@@ -513,11 +512,11 @@ class _AttendancePageState extends State<AttendancePage> {
   }
 
   List<Widget> _buildBonusStackChildren(double s) {
-    // Y 좌표 (scroll area 내부 기준)
-    const double ptTop = 6;    // 포인트 박스 top
-    const double circTop = 44; // 원 top (ptTop + 36 + 2)
-    const double connY = 64;   // 연결선 center Y (circTop + 20)
-    const double lblTop = 89;  // 라벨 top (circTop + 41 + 4)
+    const double speechTop = 4;   // 말풍선 top (circTop - 42)
+    const double circTop = 46;    // 원 top
+    const double connY = 66;      // 연결선 center Y (circTop + 20)
+    const double lblTop = 91;     // 라벨 top (circTop + 41 + 4)
+    const double latePtTop = 111; // 26~30일차 100P top (lblTop + 13 + 7)
 
     final List<Widget> children = [];
 
@@ -526,45 +525,26 @@ class _AttendancePageState extends State<AttendancePage> {
       final double left = _itemLefts[i].toDouble();
       final bool isStar = _starDays.contains(day);
       final String? point = _bonusPoints[day];
+      final bool isLate = day >= 26;
 
-      // 포인트 박스 (해당 일차만)
+      // 말풍선 (보너스 일차만)
       if (point != null) {
         children.add(Positioned(
           left: left * s,
-          top: ptTop * s,
-          child: Container(
-            width: 41 * s,
-            height: 36 * s,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD4EAFF),
-              borderRadius: BorderRadius.circular(8 * s),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              point,
-              style: GoogleFonts.inter(
-                fontSize: 12 * s,
-                fontWeight: FontWeight.w600,
-                fontStyle: FontStyle.italic,
-                color: const Color(0xFF2D6CEB),
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
+          top: speechTop * s,
+          child: _buildSpeechBubble(s, point),
         ));
       }
 
-      // 원형 아이콘
+      // 원형 아이콘 (모두 #E6E6E6)
       children.add(Positioned(
         left: left * s,
         top: circTop * s,
         child: Container(
           width: 41 * s,
           height: 41 * s,
-          decoration: BoxDecoration(
-            color: isStar
-                ? const Color(0xFF2D6CEB)
-                : const Color(0xFFE6E6E6),
+          decoration: const BoxDecoration(
+            color: Color(0xFFE6E6E6),
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
@@ -620,8 +600,78 @@ class _AttendancePageState extends State<AttendancePage> {
           ),
         ),
       ));
+
+      // 26~30일차 100P 텍스트
+      if (isLate) {
+        children.add(Positioned(
+          left: left * s,
+          top: latePtTop * s,
+          width: 41 * s,
+          child: Text(
+            '100P',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 12 * s,
+              fontWeight: FontWeight.w600,
+              fontStyle: FontStyle.italic,
+              color: const Color(0xFF2D6CEB),
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ));
+      }
     }
 
     return children;
   }
+
+  Widget _buildSpeechBubble(double s, String point) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 41 * s,
+          height: 36 * s,
+          decoration: BoxDecoration(
+            color: const Color(0xFFD4EAFF),
+            borderRadius: BorderRadius.circular(6 * s),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            point,
+            style: GoogleFonts.inter(
+              fontSize: 12 * s,
+              fontWeight: FontWeight.w600,
+              fontStyle: FontStyle.italic,
+              color: const Color(0xFF2D6CEB),
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ),
+        CustomPaint(
+          size: Size(8 * s, 6 * s),
+          painter: const _TailPainter(Color(0xFFD4EAFF)),
+        ),
+      ],
+    );
+  }
+}
+
+class _TailPainter extends CustomPainter {
+  final Color color;
+  const _TailPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
 }
