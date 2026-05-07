@@ -43,8 +43,11 @@
     html, body {
       margin: 0;
       padding: 0;
-      /* Flutter가 MediaQuery.padding.top으로 safe area를 직접 처리하므로 CSS padding 불필요 */
       background-color: #FFFFFF;
+    }
+    body {
+      /* CSS 브릿지: Flutter가 safe area를 못 읽을 때 Dart에서 getComputedStyle로 이 값을 읽어 fallback 사용 */
+      padding-bottom: env(safe-area-inset-bottom, 34px);
     }
   </style>
 </head>
