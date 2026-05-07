@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../widgets/bottom_nav_bar.dart';
 
 class AttendancePage extends StatefulWidget {
   const AttendancePage({super.key});
@@ -119,7 +118,6 @@ class _AttendancePageState extends State<AttendancePage> {
               ),
             ),
           ),
-          BottomNavBar(activeIndex: 4),
         ],
       ),
     );
