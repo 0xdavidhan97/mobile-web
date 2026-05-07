@@ -68,7 +68,7 @@ class _AttendancePageState extends State<AttendancePage> {
     const double calCardTop = 72.0;   // 187 - 115
     final double bonusCardTop = calCardTop + calCardHeight + 12.0;
     final double miningCardTop = bonusCardTop + 226.0 + 24.0;
-    final double contentHeight = miningCardTop + 226.0 + 20.0;
+    final double contentHeight = miningCardTop + 234.0 + 20.0;
 
     // ── sticky my_header2 계산 ──────────────────────────────────────
     // calCardBottom: 달력 카드 하단 (scroll-relative)
@@ -615,7 +615,7 @@ class _AttendancePageState extends State<AttendancePage> {
   Widget _buildMiningCard(double s) {
     return Container(
       width: 370 * s,
-      height: 226 * s,
+      height: 234 * s,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10 * s),
@@ -644,9 +644,9 @@ class _AttendancePageState extends State<AttendancePage> {
               ),
             ),
           ),
-          // Mission 1: write.png (878-825=53), 게시글 (880-825=55), 50P
+          // Mission 1: write.png (877-825=52), 게시글 (880-825=55), 50P (305-10=295)
           Positioned(
-            top: 53 * s,
+            top: 52 * s,
             left: 27 * s,
             child: Image.asset('assets/write.png', width: 22 * s, height: 22 * s),
           ),
@@ -656,7 +656,7 @@ class _AttendancePageState extends State<AttendancePage> {
             child: Text(
               '게시글 1회 작성하기',
               style: GoogleFonts.inter(
-                fontSize: 15 * s,
+                fontSize: 13 * s,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF6C6C6C),
                 decoration: TextDecoration.none,
@@ -669,16 +669,16 @@ class _AttendancePageState extends State<AttendancePage> {
             child: Text(
               '50P',
               style: GoogleFonts.inter(
-                fontSize: 15 * s,
+                fontSize: 13 * s,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF2D6CEB),
                 decoration: TextDecoration.none,
               ),
             ),
           ),
-          // Mission 2: image2834.png (917-825=92), 댓글 (919-825=94), 50P
+          // Mission 2: comment.png (916-825=91), 댓글 (919-825=94), 50P
           Positioned(
-            top: 92 * s,
+            top: 91 * s,
             left: 27 * s,
             child: Image.asset('assets/comment.png', width: 22 * s, height: 22 * s),
           ),
@@ -688,7 +688,7 @@ class _AttendancePageState extends State<AttendancePage> {
             child: Text(
               '댓글 5회 작성하기',
               style: GoogleFonts.inter(
-                fontSize: 15 * s,
+                fontSize: 13 * s,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF6C6C6C),
                 decoration: TextDecoration.none,
@@ -701,16 +701,16 @@ class _AttendancePageState extends State<AttendancePage> {
             child: Text(
               '50P',
               style: GoogleFonts.inter(
-                fontSize: 15 * s,
+                fontSize: 13 * s,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF2D6CEB),
                 decoration: TextDecoration.none,
               ),
             ),
           ),
-          // Mission 3: image2833.png (956-825=131), 투자정보 (958-825=133), 100P
+          // Mission 3: chart.png (955-825=130), 투자정보 (958-825=133), 100P
           Positioned(
-            top: 131 * s,
+            top: 130 * s,
             left: 27 * s,
             child: Image.asset('assets/chart.png', width: 22 * s, height: 22 * s),
           ),
@@ -720,7 +720,7 @@ class _AttendancePageState extends State<AttendancePage> {
             child: Text(
               '투자정보 페이지 방문하기',
               style: GoogleFonts.inter(
-                fontSize: 15 * s,
+                fontSize: 13 * s,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF6C6C6C),
                 decoration: TextDecoration.none,
@@ -733,16 +733,16 @@ class _AttendancePageState extends State<AttendancePage> {
             child: Text(
               '100P',
               style: GoogleFonts.inter(
-                fontSize: 15 * s,
+                fontSize: 13 * s,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF2D6CEB),
                 decoration: TextDecoration.none,
               ),
             ),
           ),
-          // 전체보기 버튼: 994-825=169, left 27, width 315, height 40
+          // 전체보기 버튼: 1000-825=175, left 37-10=27, width 315, height 40
           Positioned(
-            top: 169 * s,
+            top: 175 * s,
             left: 27 * s,
             child: Container(
               width: 315 * s,
@@ -755,9 +755,9 @@ class _AttendancePageState extends State<AttendancePage> {
               child: Text(
                 '전체보기',
                 style: GoogleFonts.inter(
-                  fontSize: 14 * s,
+                  fontSize: 12 * s,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xFF595959),
+                  color: const Color(0xFF4D4D4D),
                   decoration: TextDecoration.none,
                 ),
               ),
