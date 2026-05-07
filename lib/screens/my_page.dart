@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../widgets/my_header.dart';
 import '../widgets/bottom_nav_bar.dart';
+import 'attendance_page.dart';
 
 class MyPage extends StatelessWidget {
   const MyPage({super.key});
@@ -570,6 +571,10 @@ class _AttendanceButtonState extends State<_AttendanceButton> {
       onTapDown: (_) => setState(() => _tapped = true),
       onTapUp: (_) => setState(() => _tapped = false),
       onTapCancel: () => setState(() => _tapped = false),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AttendancePage()),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
