@@ -122,11 +122,11 @@ class _ShortcutCard extends StatelessWidget {
             left: 124 * s,
             child: Image.asset('assets/moneybag.png', width: 30 * s, height: 30 * s),
           ),
-          // stamp2.png: top 21, left 206
+          // 출석체크 (stamp2 + label, tappable): top 21, left 197
           Positioned(
             top: 21 * s,
-            left: 206 * s,
-            child: Image.asset('assets/stamp2.png', width: 27 * s, height: 27 * s),
+            left: 197 * s,
+            child: _AttendanceButton(s: s),
           ),
           // wallet2.png: top 21, left 289
           Positioned(
@@ -154,20 +154,6 @@ class _ShortcutCard extends StatelessWidget {
             left: 127 * s,
             child: Text(
               '미션',
-              style: GoogleFonts.inter(
-                fontSize: 12 * s,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF6D6D6D),
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
-          // 출석체크 label: top 61, left 197
-          Positioned(
-            top: 61 * s,
-            left: 197 * s,
-            child: Text(
-              '출석체크',
               style: GoogleFonts.inter(
                 fontSize: 12 * s,
                 fontWeight: FontWeight.w600,
@@ -558,6 +544,48 @@ class _SimpleInfoCard extends StatelessWidget {
                 color: Colors.white,
                 decoration: TextDecoration.none,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AttendanceButton extends StatefulWidget {
+  final double s;
+  const _AttendanceButton({required this.s});
+
+  @override
+  State<_AttendanceButton> createState() => _AttendanceButtonState();
+}
+
+class _AttendanceButtonState extends State<_AttendanceButton> {
+  bool _tapped = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final double s = widget.s;
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _tapped = true),
+      onTapUp: (_) => setState(() => _tapped = false),
+      onTapCancel: () => setState(() => _tapped = false),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Opacity(
+            opacity: _tapped ? 0.5 : 1.0,
+            child: Image.asset('assets/stamp2.png', width: 27 * s, height: 27 * s),
+          ),
+          SizedBox(height: 13 * s),
+          Text(
+            '출석체크',
+            style: GoogleFonts.inter(
+              fontSize: 12 * s,
+              fontWeight: FontWeight.w600,
+              color: _tapped ? const Color(0xFFA2A2A2) : const Color(0xFF6D6D6D),
+              decoration: TextDecoration.none,
             ),
           ),
         ],
