@@ -785,13 +785,18 @@ class _AttendancePageState extends State<AttendancePage> {
           child: GestureDetector(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
             child: Container(
-              width: 45 * s,
-              height: 15 * s,
+              width: 54 * s,
+              height: 18 * s,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(10 * s),
                   topRight: Radius.circular(10 * s),
+                ),
+                border: const Border(
+                  top: BorderSide(color: Color(0xFFD9D9D9), width: 1),
+                  left: BorderSide(color: Color(0xFFD9D9D9), width: 1),
+                  right: BorderSide(color: Color(0xFFD9D9D9), width: 1),
                 ),
               ),
               alignment: Alignment.center,
@@ -800,7 +805,7 @@ class _AttendancePageState extends State<AttendancePage> {
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
                 child: CustomPaint(
-                  size: Size(10 * s, 6 * s),
+                  size: Size(10 * s, 9 * s),
                   painter: const _ChevronPainter(),
                 ),
               ),
@@ -969,8 +974,14 @@ class _ChevronPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final cx = size.width / 2;
-    canvas.drawLine(Offset(0, 0), Offset(cx, size.height), paint);
-    canvas.drawLine(Offset(size.width, 0), Offset(cx, size.height), paint);
+    // Arrow 3: 상단 ∨
+    final double h1 = size.height * 4 / 9;
+    canvas.drawLine(Offset(0, 0), Offset(cx, h1), paint);
+    canvas.drawLine(Offset(size.width, 0), Offset(cx, h1), paint);
+    // Arrow 4: 하단 ∨ (Arrow 3 기준 5px 아래)
+    final double y2 = size.height * 5 / 9;
+    canvas.drawLine(Offset(0, y2), Offset(cx, size.height), paint);
+    canvas.drawLine(Offset(size.width, y2), Offset(cx, size.height), paint);
   }
 
   @override
