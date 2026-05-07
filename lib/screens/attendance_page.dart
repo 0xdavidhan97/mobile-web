@@ -437,6 +437,20 @@ class _AttendancePageState extends State<AttendancePage> {
 
   // ── 출석 보너스 달성 현황 카드 ──────────────────────────────────
 
+  static const List<int> _itemLefts = [
+    36, 105, 174, 243, 312, 381, 450, 519, 588, 657,
+    726, 795, 864, 933, 1002, 1071, 1140, 1209, 1278, 1347,
+    1416, 1485, 1554, 1623, 1692, 1761, 1830, 1899, 1968, 2037,
+  ];
+
+  static const Map<int, String> _bonusPoints = {
+    3: '50P', 7: '100P', 10: '150P', 14: '200P',
+    17: '220P', 20: '250P', 25: '350P',
+    26: '100P', 27: '100P', 28: '100P', 29: '100P', 30: '100P',
+  };
+
+  static const Set<int> _starDays = {3, 7, 10, 14, 17, 20, 25};
+
   Widget _buildBonusCard(double s) {
     return Container(
       width: 378 * s,
@@ -478,89 +492,79 @@ class _AttendancePageState extends State<AttendancePage> {
                 ],
               ),
             ),
-            SizedBox(height: 14 * s),
+            SizedBox(height: 10 * s),
             Expanded(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 physics: const ClampingScrollPhysics(),
-                padding: EdgeInsets.symmetric(horizontal: 17 * s),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: _buildBonusItems(s),
+                child: SizedBox(
+                  width: 2102 * s,
+                  child: Stack(
+                    children: _buildBonusStackChildren(s),
+                  ),
                 ),
               ),
             ),
-            SizedBox(height: 14 * s),
+            SizedBox(height: 10 * s),
           ],
         ),
       ),
     );
   }
 
-  List<Widget> _buildBonusItems(double s) {
-    const List<String> basePoints = [
-      '50P', '100P', '150P', '200P', '220P', '250P', '350P'
-    ];
-    const Set<int> starDays = {7, 14, 21, 28};
-    final List<Widget> items = [];
+  List<Widget> _buildBonusStackChildren(double s) {
+    // Y 좌표 (scroll area 내부 기준)
+    const double ptTop = 6;    // 포인트 박스 top
+    const double circTop = 44; // 원 top (ptTop + 36 + 2)
+    const double connY = 64;   // 연결선 center Y (circTop + 20)
+    const double lblTop = 89;  // 라벨 top (circTop + 41 + 4)
 
-    for (int day = 1; day <= 30; day++) {
-      if (day > 1) items.add(_buildConnector(s));
-      final String point = day <= 7 ? basePoints[day - 1] : '100P';
-      items.add(_buildBonusItem(s, day, point, starDays.contains(day)));
-    }
-    return items;
-  }
+    final List<Widget> children = [];
 
-  Widget _buildConnector(double s) {
-    // 세로 오프셋: point rect(36) + 원 반지름(20.5) - 선 반지름(1) ≈ 55.5
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: (36 + 20) * s),
-        Container(
-          width: 26 * s,
-          height: 2,
-          color: const Color(0xFFE6E6E6),
-        ),
-      ],
-    );
-  }
+    for (int i = 0; i < 30; i++) {
+      final int day = i + 1;
+      final double left = _itemLefts[i].toDouble();
+      final bool isStar = _starDays.contains(day);
+      final String? point = _bonusPoints[day];
 
-  Widget _buildBonusItem(double s, int day, String point, bool isStar) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // 포인트 사각형
-        Container(
-          width: 41 * s,
-          height: 36 * s,
-          decoration: BoxDecoration(
-            color: const Color(0xFFD4EAFF),
-            borderRadius: BorderRadius.circular(8 * s),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            point,
-            style: GoogleFonts.inter(
-              fontSize: 12 * s,
-              fontWeight: FontWeight.w600,
-              fontStyle: FontStyle.italic,
-              color: const Color(0xFF2D6CEB),
-              decoration: TextDecoration.none,
+      // 포인트 박스 (해당 일차만)
+      if (point != null) {
+        children.add(Positioned(
+          left: left * s,
+          top: ptTop * s,
+          child: Container(
+            width: 41 * s,
+            height: 36 * s,
+            decoration: BoxDecoration(
+              color: const Color(0xFFD4EAFF),
+              borderRadius: BorderRadius.circular(8 * s),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              point,
+              style: GoogleFonts.inter(
+                fontSize: 12 * s,
+                fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
+                color: const Color(0xFF2D6CEB),
+                decoration: TextDecoration.none,
+              ),
             ),
           ),
-        ),
-        // 원형 아이콘 영역
-        Container(
+        ));
+      }
+
+      // 원형 아이콘
+      children.add(Positioned(
+        left: left * s,
+        top: circTop * s,
+        child: Container(
           width: 41 * s,
           height: 41 * s,
           decoration: BoxDecoration(
             color: isStar
                 ? const Color(0xFF2D6CEB)
-                : const Color(0xFFD4EAFF),
+                : const Color(0xFFE6E6E6),
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
@@ -579,12 +583,35 @@ class _AttendancePageState extends State<AttendancePage> {
                     color: const Color(0xFF2D6CEB),
                   ),
                 )
-              : null,
+              : Icon(
+                  Icons.check,
+                  size: 14 * s,
+                  color: Colors.white,
+                ),
         ),
-        SizedBox(height: 4 * s),
-        // N일차 라벨
-        Text(
+      ));
+
+      // 연결선 (마지막 아이템 제외)
+      if (i < 29) {
+        children.add(Positioned(
+          left: (left + 42) * s,
+          top: connY * s,
+          child: Container(
+            width: 26 * s,
+            height: 2,
+            color: const Color(0xFFE6E6E6),
+          ),
+        ));
+      }
+
+      // 일차 라벨
+      children.add(Positioned(
+        left: left * s,
+        top: lblTop * s,
+        width: 41 * s,
+        child: Text(
           '$day일차',
+          textAlign: TextAlign.center,
           style: GoogleFonts.inter(
             fontSize: 11 * s,
             fontWeight: FontWeight.w400,
@@ -592,7 +619,9 @@ class _AttendancePageState extends State<AttendancePage> {
             decoration: TextDecoration.none,
           ),
         ),
-      ],
-    );
+      ));
+    }
+
+    return children;
   }
 }
