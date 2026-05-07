@@ -549,19 +549,10 @@ class _AttendancePageState extends State<AttendancePage> {
           ),
           alignment: Alignment.center,
           child: isStar
-              ? Container(
-                  width: 20 * s,
-                  height: 20 * s,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.star,
-                    size: 12 * s,
-                    color: const Color(0xFF2D6CEB),
-                  ),
+              ? Icon(
+                  Icons.star,
+                  size: 20 * s,
+                  color: Colors.white,
                 )
               : Icon(
                   Icons.check,
