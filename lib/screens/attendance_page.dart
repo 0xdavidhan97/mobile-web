@@ -29,7 +29,8 @@ class _AttendancePageState extends State<AttendancePage> {
     final bool sixRows = numRows >= 6;
     final double calCardHeight = sixRows ? 484.0 : 437.0;
     final double buttonTopInCard = sixRows ? 407.0 : 360.0;
-    final double contentHeight = 231.0 + calCardHeight + 20.0;
+    final double bonusCardTop = 231.0 + calCardHeight + 15.0;
+    final double contentHeight = bonusCardTop + 226.0 + 20.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -106,6 +107,12 @@ class _AttendancePageState extends State<AttendancePage> {
                         s, year, month, daysInMonth, startCol,
                         calCardHeight, buttonTopInCard,
                       ),
+                    ),
+                    // 출석 보너스 달성 현황 카드
+                    Positioned(
+                      top: bonusCardTop * s,
+                      left: 6 * s,
+                      child: _buildBonusCard(s),
                     ),
                   ],
                 ),
@@ -425,6 +432,167 @@ class _AttendancePageState extends State<AttendancePage> {
           ),
         ],
       ),
+    );
+  }
+
+  // ── 출석 보너스 달성 현황 카드 ──────────────────────────────────
+
+  Widget _buildBonusCard(double s) {
+    return Container(
+      width: 378 * s,
+      height: 226 * s,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFEDF0F5), width: 1.5),
+        borderRadius: BorderRadius.circular(30 * s),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30 * s),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(17 * s, 22 * s, 17 * s, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '출석 보너스 달성 현황',
+                    style: GoogleFonts.inter(
+                      fontSize: 15 * s,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF272727),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  SizedBox(height: 5 * s),
+                  Text(
+                    '출석 횟수가 쌓일수록 더 큰 보너스를 받아요',
+                    style: GoogleFonts.inter(
+                      fontSize: 11 * s,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF6C6C6C),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 14 * s),
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const ClampingScrollPhysics(),
+                padding: EdgeInsets.symmetric(horizontal: 17 * s),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: _buildBonusItems(s),
+                ),
+              ),
+            ),
+            SizedBox(height: 14 * s),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildBonusItems(double s) {
+    const List<String> basePoints = [
+      '50P', '100P', '150P', '200P', '220P', '250P', '350P'
+    ];
+    const Set<int> starDays = {7, 14, 21, 28};
+    final List<Widget> items = [];
+
+    for (int day = 1; day <= 30; day++) {
+      if (day > 1) items.add(_buildConnector(s));
+      final String point = day <= 7 ? basePoints[day - 1] : '100P';
+      items.add(_buildBonusItem(s, day, point, starDays.contains(day)));
+    }
+    return items;
+  }
+
+  Widget _buildConnector(double s) {
+    // 세로 오프셋: point rect(36) + 원 반지름(20.5) - 선 반지름(1) ≈ 55.5
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: (36 + 20) * s),
+        Container(
+          width: 26 * s,
+          height: 2,
+          color: const Color(0xFFE6E6E6),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBonusItem(double s, int day, String point, bool isStar) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 포인트 사각형
+        Container(
+          width: 41 * s,
+          height: 36 * s,
+          decoration: BoxDecoration(
+            color: const Color(0xFFD4EAFF),
+            borderRadius: BorderRadius.circular(8 * s),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            point,
+            style: GoogleFonts.inter(
+              fontSize: 12 * s,
+              fontWeight: FontWeight.w600,
+              fontStyle: FontStyle.italic,
+              color: const Color(0xFF2D6CEB),
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ),
+        // 원형 아이콘 영역
+        Container(
+          width: 41 * s,
+          height: 41 * s,
+          decoration: BoxDecoration(
+            color: isStar
+                ? const Color(0xFF2D6CEB)
+                : const Color(0xFFD4EAFF),
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: isStar
+              ? Container(
+                  width: 20 * s,
+                  height: 20 * s,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.star,
+                    size: 12 * s,
+                    color: const Color(0xFF2D6CEB),
+                  ),
+                )
+              : null,
+        ),
+        SizedBox(height: 4 * s),
+        // N일차 라벨
+        Text(
+          '$day일차',
+          style: GoogleFonts.inter(
+            fontSize: 11 * s,
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFF6C6C6C),
+            decoration: TextDecoration.none,
+          ),
+        ),
+      ],
     );
   }
 }
