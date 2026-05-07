@@ -775,166 +775,159 @@ class _AttendancePageState extends State<AttendancePage> {
   // ── 출석포인트 하단 고정 ──────────────────────────────────────────
 
   Widget _buildFixedPointsSection(double s, int month) {
-    const double btnDiam = 28.0;
-    const double visibleH = 37.0; // 접힌 상태에서 보이는 높이
-    const double panelH = 133.0;
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 출석포인트 패널 (접기/펼치기로 높이 변화)
-        ClipRect(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            height: (_isExpanded ? panelH : visibleH) * s,
-            child: Stack(
-              children: [
-                // 패널 컨테이너 (항상 133*s 높이)
-                Container(
-                  width: 390 * s,
-                  height: panelH * s,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF4F8FF),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30 * s),
-                      topRight: Radius.circular(30 * s),
-                    ),
-                    border: const Border(
-                      top: BorderSide(color: Color(0xFFEDF0F5), width: 1.5),
-                    ),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(166, 166, 166, 0.1),
-                        blurRadius: 4,
-                        spreadRadius: 2,
-                        offset: Offset(0, -1),
-                      ),
-                      BoxShadow(
-                        color: Color.fromRGBO(0, 0, 0, 0.25),
-                        blurRadius: 4,
-                        spreadRadius: 0,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        top: 19 * s,
-                        left: 22 * s,
-                        child: Text(
-                          '$month월 출석 포인트',
-                          style: GoogleFonts.inter(
-                            fontSize: 15 * s,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF272727),
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 11 * s,
-                        left: 248 * s,
-                        child: Text(
-                          '0',
-                          style: GoogleFonts.inter(
-                            fontSize: 30 * s,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF2D6CEB),
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 15 * s,
-                        left: 274 * s,
-                        child: Text(
-                          '/ 2,000P',
-                          style: GoogleFonts.inter(
-                            fontSize: 23 * s,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF4B4B4B),
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 52 * s,
-                        left: 19 * s,
-                        child: Container(
-                          width: 352 * s,
-                          height: 9 * s,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFD9D9D9),
-                            borderRadius: BorderRadius.circular(10 * s),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 82 * s,
-                        left: 15 * s,
-                        child: GestureDetector(
-                          onTap: _checkedIn ? null : () => setState(() => _checkedIn = true),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            width: 360 * s,
-                            height: 41 * s,
-                            decoration: BoxDecoration(
-                              color: _checkedIn
-                                  ? const Color(0xFF838383)
-                                  : const Color(0xFF2D6CEB),
-                              borderRadius: BorderRadius.circular(10 * s),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              _checkedIn ? '출석완료' : '출석하고 포인트 받기',
-                              style: GoogleFonts.inter(
-                                fontSize: 13 * s,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                decoration: TextDecoration.none,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+        // Rectangle 1440: 토글 탭 버튼 (45×15, 상단 좌우 10px r, 패널 위 노출)
+        Center(
+          child: GestureDetector(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            child: Container(
+              width: 45 * s,
+              height: 15 * s,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10 * s),
+                  topRight: Radius.circular(10 * s),
                 ),
-                // 토글 버튼 (패널 상단 중앙, 마지막 child → 항상 최상위 렌더링)
-                Positioned(
-                  top: (visibleH - btnDiam) / 2 * s,
-                  left: 0,
-                  right: 0,
-                  child: Center(
+              ),
+              alignment: Alignment.center,
+              child: AnimatedRotation(
+                turns: _isExpanded ? 0.0 : 0.5,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: CustomPaint(
+                  size: Size(10 * s, 6 * s),
+                  painter: const _ChevronPainter(),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // 출석포인트 패널: height 133(펼침) ↔ 31(접힘), 내용은 OverflowBox로 항상 133 유지
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          height: (_isExpanded ? 133.0 : 31.0) * s,
+          width: 390 * s,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF4F8FF),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30 * s),
+              topRight: Radius.circular(30 * s),
+            ),
+            boxShadow: [
+              const BoxShadow(
+                color: Color.fromRGBO(166, 166, 166, 0.1),
+                blurRadius: 4,
+                spreadRadius: 2,
+                offset: Offset(0, -1),
+              ),
+              // 접힌 상태에서만 하단 드롭 섀도 추가
+              BoxShadow(
+                color: Color.fromRGBO(0, 0, 0, _isExpanded ? 0.0 : 0.25),
+                blurRadius: 4,
+                spreadRadius: 0,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: OverflowBox(
+            maxHeight: 133.0 * s,
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              height: 133.0 * s,
+              width: 390 * s,
+              child: Stack(
+                children: [
+                  // "$month월 출석 포인트": top 19, left 22
+                  Positioned(
+                    top: 19 * s,
+                    left: 22 * s,
+                    child: Text(
+                      '$month월 출석 포인트',
+                      style: GoogleFonts.inter(
+                        fontSize: 15 * s,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF272727),
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ),
+                  // "0": top 11, left 248
+                  Positioned(
+                    top: 11 * s,
+                    left: 248 * s,
+                    child: Text(
+                      '0',
+                      style: GoogleFonts.inter(
+                        fontSize: 30 * s,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF2D6CEB),
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ),
+                  // "/ 2,000P": top 15, left 274
+                  Positioned(
+                    top: 15 * s,
+                    left: 274 * s,
+                    child: Text(
+                      '/ 2,000P',
+                      style: GoogleFonts.inter(
+                        fontSize: 23 * s,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF4B4B4B),
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ),
+                  // 진행 바: top 52, left 19, 352×9
+                  Positioned(
+                    top: 52 * s,
+                    left: 19 * s,
+                    child: Container(
+                      width: 352 * s,
+                      height: 9 * s,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD9D9D9),
+                        borderRadius: BorderRadius.circular(10 * s),
+                      ),
+                    ),
+                  ),
+                  // 출석하고 포인트 받기 버튼: top 82, left 15, 360×41
+                  Positioned(
+                    top: 82 * s,
+                    left: 15 * s,
                     child: GestureDetector(
-                      onTap: () => setState(() => _isExpanded = !_isExpanded),
-                      child: Container(
-                        width: btnDiam * s,
-                        height: btnDiam * s,
+                      onTap: _checkedIn ? null : () => setState(() => _checkedIn = true),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: 360 * s,
+                        height: 41 * s,
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color.fromRGBO(0, 0, 0, 0.15),
-                              blurRadius: 4,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
+                          color: _checkedIn
+                              ? const Color(0xFF838383)
+                              : const Color(0xFF2D6CEB),
+                          borderRadius: BorderRadius.circular(10 * s),
                         ),
                         alignment: Alignment.center,
-                        child: Icon(
-                          _isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
-                          size: 18 * s,
-                          color: const Color(0xFF6C6C6C),
+                        child: Text(
+                          _checkedIn ? '출석완료' : '출석하고 포인트 받기',
+                          style: GoogleFonts.inter(
+                            fontSize: 13 * s,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            decoration: TextDecoration.none,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -961,6 +954,27 @@ class _TailPainter extends CustomPainter {
       ..lineTo(size.width / 2, size.height)
       ..close();
     canvas.drawPath(path, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
+// "∨" 모양 화살표. AnimatedRotation(turns: 0.5)으로 "∧" 방향 전환
+class _ChevronPainter extends CustomPainter {
+  const _ChevronPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFA6A6A6)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final cx = size.width / 2;
+    canvas.drawLine(Offset(0, 0), Offset(cx, size.height), paint);
+    canvas.drawLine(Offset(size.width, 0), Offset(cx, size.height), paint);
   }
 
   @override
