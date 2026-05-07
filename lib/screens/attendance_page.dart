@@ -772,27 +772,24 @@ class _AttendancePageState extends State<AttendancePage> {
 
   Widget _buildFixedPointsSection(double s, int month) {
     const double btnDiam = 28.0;
-    const double btnHalf = btnDiam / 2; // 14
-    const double panelH = 133.0 + 34.0; // 167
+    const double visibleH = 37.0; // 접힌 상태에서 보이는 높이
+    const double panelH = 133.0;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      height: (_isExpanded ? btnHalf + panelH : btnHalf) * s,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // 포인트 패널 (top: btnHalf*s, 접히면 컨테이너 밖으로 잘림)
-          Positioned(
-            top: btnHalf * s,
-            left: 0,
-            right: 0,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 출석포인트 패널 (접기/펼치기로 높이 변화)
+        ClipRect(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            height: (_isExpanded ? panelH : visibleH) * s,
+            child: Stack(
               children: [
+                // 패널 컨테이너 (항상 133*s 높이)
                 Container(
                   width: 390 * s,
-                  height: 133 * s,
+                  height: panelH * s,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF4F8FF),
                     borderRadius: BorderRadius.only(
@@ -901,48 +898,49 @@ class _AttendancePageState extends State<AttendancePage> {
                     ],
                   ),
                 ),
-                Container(
-                  width: 390 * s,
-                  height: 34 * s,
-                  color: const Color(0xFFF4F8FF),
+                // 토글 버튼 (패널 상단 중앙, 마지막 child → 항상 최상위 렌더링)
+                Positioned(
+                  top: (visibleH - btnDiam) / 2 * s,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _isExpanded = !_isExpanded),
+                      child: Container(
+                        width: btnDiam * s,
+                        height: btnDiam * s,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color.fromRGBO(0, 0, 0, 0.15),
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: Icon(
+                          _isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                          size: 18 * s,
+                          color: const Color(0xFF6C6C6C),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          // 토글 버튼 (항상 top: 0)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: GestureDetector(
-                onTap: () => setState(() => _isExpanded = !_isExpanded),
-                child: Container(
-                  width: btnDiam * s,
-                  height: btnDiam * s,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color.fromRGBO(0, 0, 0, 0.15),
-                        blurRadius: 4,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    _isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
-                    size: 18 * s,
-                    color: const Color(0xFF6C6C6C),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+        // 스와이프바 (항상 고정)
+        Container(
+          width: 390 * s,
+          height: 34 * s,
+          color: const Color(0xFFF4F8FF),
+        ),
+      ],
     );
   }
 }
