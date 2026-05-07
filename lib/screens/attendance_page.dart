@@ -505,12 +505,6 @@ class _AttendancePageState extends State<AttendancePage> {
             ),
             boxShadow: const [
               BoxShadow(
-                color: Color.fromRGBO(166, 166, 166, 0.1),
-                blurRadius: 4,
-                spreadRadius: 2,
-                offset: Offset(0, -1),
-              ),
-              BoxShadow(
                 color: Color.fromRGBO(0, 0, 0, 0.25),
                 blurRadius: 4,
                 spreadRadius: 0,
