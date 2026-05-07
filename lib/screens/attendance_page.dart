@@ -775,7 +775,9 @@ class _AttendancePageState extends State<AttendancePage> {
   // ── 출석포인트 하단 고정 ──────────────────────────────────────────
 
   Widget _buildFixedPointsSection(double s, int month) {
-    return Column(
+    return Container(
+      color: Colors.white,
+      child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Rectangle 1440: 토글 탭 버튼 (45×15, 상단 좌우 10px r, 패널 위 노출)
@@ -931,6 +933,7 @@ class _AttendancePageState extends State<AttendancePage> {
           color: const Color(0xFFF4F8FF),
         ),
       ],
+      ),
     );
   }
 }
