@@ -495,7 +495,7 @@ class _AttendancePageState extends State<AttendancePage> {
           width: 390 * s,
           height: 170 * s,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFFF4F8FF),
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(30 * s),
               topRight: Radius.circular(30 * s),
@@ -632,7 +632,7 @@ class _AttendancePageState extends State<AttendancePage> {
         Container(
           width: 390 * s,
           height: 34 * s,
-          color: Colors.white,
+          color: const Color(0xFFF4F8FF),
         ),
       ],
     );
