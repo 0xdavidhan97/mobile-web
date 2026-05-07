@@ -28,7 +28,7 @@ class _AttendancePageState extends State<AttendancePage> {
     final bool sixRows = numRows >= 6;
     final double calCardHeight = sixRows ? 484.0 : 437.0;
     final double buttonTopInCard = sixRows ? 407.0 : 360.0;
-    final double bonusCardTop = 231.0 + calCardHeight + 15.0;
+    final double bonusCardTop = 46.0 + calCardHeight + 15.0;
     final double contentHeight = bonusCardTop + 226.0 + 20.0;
 
     return Scaffold(
@@ -92,15 +92,9 @@ class _AttendancePageState extends State<AttendancePage> {
                         ),
                       ),
                     ),
-                    // 출석포인트 카드: rel top 46, left 6
+                    // 달력 카드: rel top 46, left 6
                     Positioned(
                       top: 46 * s,
-                      left: 6 * s,
-                      child: _buildPointsCard(s, month),
-                    ),
-                    // 달력 카드: rel top 231, left 6
-                    Positioned(
-                      top: 231 * s,
                       left: 6 * s,
                       child: _buildCalendarCard(
                         s, year, month, daysInMonth, startCol,
@@ -118,6 +112,7 @@ class _AttendancePageState extends State<AttendancePage> {
               ),
             ),
           ),
+          _buildFixedPointsSection(s, month),
         ],
       ),
     );
@@ -171,135 +166,6 @@ class _AttendancePageState extends State<AttendancePage> {
     );
   }
 
-  Widget _buildPointsCard(double s, int month) {
-    return Container(
-      width: 378 * s,
-      height: 170 * s,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFFEDF0F5), width: 1.5),
-        borderRadius: BorderRadius.circular(30 * s),
-      ),
-      child: Stack(
-        children: [
-          // "$month월 출석 포인트": top 25, left 17
-          Positioned(
-            top: 25 * s,
-            left: 17 * s,
-            child: Text(
-              '$month월 출석 포인트',
-              style: GoogleFonts.inter(
-                fontSize: 15 * s,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF272727),
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
-          // "0" 현재 포인트: top 51, left 17
-          Positioned(
-            top: 51 * s,
-            left: 17 * s,
-            child: Text(
-              '0',
-              style: GoogleFonts.inter(
-                fontSize: 25 * s,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF2D6CEB),
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
-          // "/ 2,000P": top 56, left 40
-          Positioned(
-            top: 56 * s,
-            left: 40 * s,
-            child: Text(
-              '/ 2,000P',
-              style: GoogleFonts.inter(
-                fontSize: 17 * s,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF4B4B4B),
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
-          // 진행 바 배경: top 88, left 11, 356×9
-          Positioned(
-            top: 88 * s,
-            left: 11 * s,
-            child: Container(
-              width: 356 * s,
-              height: 9 * s,
-              decoration: BoxDecoration(
-                color: const Color(0xFFD9D9D9),
-                borderRadius: BorderRadius.circular(10 * s),
-              ),
-            ),
-          ),
-          // 구분선: top 109, left 11
-          Positioned(
-            top: 109 * s,
-            left: 11 * s,
-            child: Container(
-              width: 356 * s,
-              height: 1.5,
-              color: const Color(0xFFD9D9D9),
-            ),
-          ),
-          // info 아이콘: top 121, left 15
-          Positioned(
-            top: 121 * s,
-            left: 15 * s,
-            child: Icon(
-              Icons.info_outline,
-              size: 11 * s,
-              color: const Color(0xFF6C6C6C),
-            ),
-          ),
-          // "멤버십 등급에 따라...": top 120, left 29
-          Positioned(
-            top: 120 * s,
-            left: 29 * s,
-            child: Text(
-              '멤버십 등급에 따라 최대 포인트가 달라져요',
-              style: GoogleFonts.inter(
-                fontSize: 10 * s,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF6C6C6C),
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
-          // bolt 아이콘: top 139, left 15
-          Positioned(
-            top: 139 * s,
-            left: 15 * s,
-            child: Icon(
-              Icons.bolt,
-              size: 11 * s,
-              color: const Color(0xFF6C6C6C),
-            ),
-          ),
-          // "매일 출석하면...": top 138, left 29
-          Positioned(
-            top: 138 * s,
-            left: 29 * s,
-            child: Text(
-              '매일 출석하면 이번 달 2,000P를 모두 받을 수 있어요',
-              style: GoogleFonts.inter(
-                fontSize: 10 * s,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF6C6C6C),
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildCalendarCard(
     double s,
     int year,
@@ -339,8 +205,15 @@ class _AttendancePageState extends State<AttendancePage> {
       height: cardHeight * s,
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: const Color(0xFFEDF0F5), width: 1.5),
         borderRadius: BorderRadius.circular(30 * s),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(87, 87, 87, 0.25),
+            blurRadius: 3,
+            spreadRadius: 0,
+            offset: Offset(0, 0),
+          ),
+        ],
       ),
       child: Stack(
         children: [
@@ -612,6 +485,157 @@ class _AttendancePageState extends State<AttendancePage> {
     }
 
     return children;
+  }
+
+  Widget _buildFixedPointsSection(double s, int month) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 390 * s,
+          height: 170 * s,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30 * s),
+              topRight: Radius.circular(30 * s),
+            ),
+            border: const Border(
+              top: BorderSide(color: Color(0xFFEDF0F5), width: 1.5),
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color.fromRGBO(166, 166, 166, 0.1),
+                blurRadius: 4,
+                spreadRadius: 2,
+                offset: Offset(0, -1),
+              ),
+              BoxShadow(
+                color: Color.fromRGBO(0, 0, 0, 0.25),
+                blurRadius: 4,
+                spreadRadius: 0,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // "$month월 출석 포인트": top 25, left 21.54
+              Positioned(
+                top: 25 * s,
+                left: 21.54 * s,
+                child: Text(
+                  '$month월 출석 포인트',
+                  style: GoogleFonts.inter(
+                    fontSize: 15 * s,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF272727),
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+              // "0": top 51, left 21.54
+              Positioned(
+                top: 51 * s,
+                left: 21.54 * s,
+                child: Text(
+                  '0',
+                  style: GoogleFonts.inter(
+                    fontSize: 25 * s,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF2D6CEB),
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+              // "/ 2,000P": top 56, left 45.27
+              Positioned(
+                top: 56 * s,
+                left: 45.27 * s,
+                child: Text(
+                  '/ 2,000P',
+                  style: GoogleFonts.inter(
+                    fontSize: 17 * s,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF4B4B4B),
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+              // 진행 바: top 89, left 19, 352×9
+              Positioned(
+                top: 89 * s,
+                left: 19 * s,
+                child: Container(
+                  width: 352 * s,
+                  height: 9 * s,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD9D9D9),
+                    borderRadius: BorderRadius.circular(10 * s),
+                  ),
+                ),
+              ),
+              // 구분선: top 109, left 11.35, width 367.3
+              Positioned(
+                top: 109 * s,
+                left: 11.35 * s,
+                child: Container(
+                  width: 367.3 * s,
+                  height: 1.5,
+                  color: const Color(0xFFD9D9D9),
+                ),
+              ),
+              // info 아이콘: top 124.91, left 15.56
+              Positioned(
+                top: 124.91 * s,
+                left: 15.56 * s,
+                child: Icon(Icons.info_outline, size: 11.17 * s, color: const Color(0xFF6C6C6C)),
+              ),
+              // "멤버십 등급에 따라...": top 124, left 30
+              Positioned(
+                top: 124 * s,
+                left: 30 * s,
+                child: Text(
+                  '멤버십 등급에 따라 최대 포인트가 달라져요',
+                  style: GoogleFonts.inter(
+                    fontSize: 11 * s,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF6C6C6C),
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+              // bolt 아이콘: top 145.91, left 15.56
+              Positioned(
+                top: 145.91 * s,
+                left: 15.56 * s,
+                child: Icon(Icons.bolt, size: 11.17 * s, color: const Color(0xFF6C6C6C)),
+              ),
+              // "매일 출석하면...": top 145, left 30
+              Positioned(
+                top: 145 * s,
+                left: 30 * s,
+                child: Text(
+                  '매일 출석하면 이번 달 2,000P를 모두 받을 수 있어요',
+                  style: GoogleFonts.inter(
+                    fontSize: 11 * s,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF6C6C6C),
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // 스와이프바
+        Container(
+          width: 390 * s,
+          height: 34 * s,
+          color: Colors.white,
+        ),
+      ],
+    );
   }
 
   Widget _buildSpeechBubble(double s, String point) {
