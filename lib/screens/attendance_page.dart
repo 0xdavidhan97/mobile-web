@@ -65,16 +65,16 @@ class _AttendancePageState extends State<AttendancePage> {
     // 달력 카드 높이: 5행 기준 376, 행 추가 시 47씩
     final double calCardHeight = 124.0 + numRows * 47.0 + 16.0;
 
-    // scroll-relative 좌표 (절대값 - 115)
-    const double calCardTop = 72.0;   // 187 - 115
-    final double bonusCardTop = calCardTop + calCardHeight + 12.0;
-    final double miningCardTop = bonusCardTop + 226.0 + 24.0;
+    // scroll-relative 좌표
+    // 순서: my_header2(69) →[5px]→ 보너스카드(226) →[15px]→ 달력카드 →[24px]→ 채굴카드
+    const double headerH = 69.0;
+    const double bonusCardTop = headerH + 5.0;          // 74
+    final double calCardTop = bonusCardTop + 226.0 + 15.0; // 315
+    final double miningCardTop = calCardTop + calCardHeight + 24.0;
     final double contentHeight = miningCardTop + 234.0 + 20.0;
 
     // ── sticky my_header2 계산 ──────────────────────────────────────
-    // calCardBottom: 달력 카드 하단 (scroll-relative)
     // my_header2 하단(69)에 달력 카드 하단이 닿는 순간부터 함께 슬라이드 아웃
-    const double headerH = 69.0;
     final double pinnedUntil = calCardTop + calCardHeight - headerH;
     final double scrollDesign = s > 0 ? _scrollOffset / s : 0;
     final double overlapAmount = scrollDesign - pinnedUntil; // 0 = 겹치기 시작, headerH = 완전히 사라짐
@@ -85,7 +85,7 @@ class _AttendancePageState extends State<AttendancePage> {
     return ThemeColorScope(
       color: '#F4F8FF',
       child: Scaffold(
-        backgroundColor: const Color(0xFFF4F8FF),
+        backgroundColor: const Color(0xFFFEFEFF),
         body: Column(
           children: [
             _buildHeader(context, topPadding, s),
@@ -100,12 +100,12 @@ class _AttendancePageState extends State<AttendancePage> {
                       height: contentHeight * s,
                       child: Stack(
                         children: [
-                          // 상단 #FFFFFF 배경 (absolute 754px = relative 639px까지)
+                          // 상단 #FFFFFF 배경: 보너스카드 + 달력카드까지 커버
                           Positioned(
                             top: 0,
                             left: 0,
                             right: 0,
-                            child: Container(height: 639 * s, color: Colors.white),
+                            child: Container(height: (calCardTop + calCardHeight) * s, color: Colors.white),
                           ),
                           // my_header2: 고정 중엔 spacer, 최상단일 땐 실제 위젯
                           Positioned(
@@ -116,17 +116,17 @@ class _AttendancePageState extends State<AttendancePage> {
                                 ? SizedBox(height: headerH * s)
                                 : _buildMyHeader2(s),
                           ),
-                          // 달력 카드: relative top 72, left 10
-                          Positioned(
-                            top: calCardTop * s,
-                            left: 10 * s,
-                            child: _buildCalendarCard(s, year, month, daysInMonth, startCol, calCardHeight),
-                          ),
-                          // 출석 보너스 달성 현황
+                          // 출석 보너스 달성 현황: my_header2 하단 5px 아래
                           Positioned(
                             top: bonusCardTop * s,
                             left: 10 * s,
                             child: _buildBonusCard(s),
+                          ),
+                          // 달력 카드: 보너스카드 하단 15px 아래
+                          Positioned(
+                            top: calCardTop * s,
+                            left: 10 * s,
+                            child: _buildCalendarCard(s, year, month, daysInMonth, startCol, calCardHeight),
                           ),
                           // 포인트 채굴
                           Positioned(
