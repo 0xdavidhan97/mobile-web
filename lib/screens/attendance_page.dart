@@ -774,7 +774,7 @@ class _AttendancePageState extends State<AttendancePage> {
       children: [
         Container(
           width: 390 * s,
-          height: 160 * s,
+          height: 133 * s,
           decoration: BoxDecoration(
             color: const Color(0xFFF4F8FF),
             borderRadius: BorderRadius.only(
@@ -801,10 +801,10 @@ class _AttendancePageState extends State<AttendancePage> {
           ),
           child: Stack(
             children: [
-              // "$month월 출석 포인트": top 25, left 21.54
+              // "$month월 출석 포인트": top 19, left 22
               Positioned(
-                top: 25 * s,
-                left: 21.54 * s,
+                top: 19 * s,
+                left: 22 * s,
                 child: Text(
                   '$month월 출석 포인트',
                   style: GoogleFonts.inter(
@@ -815,37 +815,37 @@ class _AttendancePageState extends State<AttendancePage> {
                   ),
                 ),
               ),
-              // "0": top 51, left 21.54
+              // "0": top 11, left 248, fontSize 30
               Positioned(
-                top: 51 * s,
-                left: 21.54 * s,
+                top: 11 * s,
+                left: 248 * s,
                 child: Text(
                   '0',
                   style: GoogleFonts.inter(
-                    fontSize: 25 * s,
+                    fontSize: 30 * s,
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF2D6CEB),
                     decoration: TextDecoration.none,
                   ),
                 ),
               ),
-              // "/ 2,000P": top 56, left 45.27
+              // "/ 2,000P": top 15, left 274, fontSize 23
               Positioned(
-                top: 56 * s,
-                left: 45.27 * s,
+                top: 15 * s,
+                left: 274 * s,
                 child: Text(
                   '/ 2,000P',
                   style: GoogleFonts.inter(
-                    fontSize: 17 * s,
+                    fontSize: 23 * s,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF4B4B4B),
                     decoration: TextDecoration.none,
                   ),
                 ),
               ),
-              // 진행 바: top 89, left 19, 352×9
+              // 진행 바: top 52, left 19, 352×9
               Positioned(
-                top: 89 * s,
+                top: 52 * s,
                 left: 19 * s,
                 child: Container(
                   width: 352 * s,
@@ -856,9 +856,9 @@ class _AttendancePageState extends State<AttendancePage> {
                   ),
                 ),
               ),
-              // 출석하고 포인트 받기 버튼: top 109, left 15, 360×41
+              // 출석하고 포인트 받기 버튼: top 82, left 15, 360×41
               Positioned(
-                top: 109 * s,
+                top: 82 * s,
                 left: 15 * s,
                 child: GestureDetector(
                   onTap: _checkedIn ? null : () => setState(() => _checkedIn = true),
