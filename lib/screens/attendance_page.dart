@@ -12,6 +12,8 @@ class _AttendancePageState extends State<AttendancePage> {
   bool _notificationOn = true;
   bool _checkedIn = false;
 
+  bool _isExpanded = true;
+
   late final ScrollController _scrollController;
   double _scrollOffset = 0;
 
@@ -769,132 +771,178 @@ class _AttendancePageState extends State<AttendancePage> {
   // ── 출석포인트 하단 고정 ──────────────────────────────────────────
 
   Widget _buildFixedPointsSection(double s, int month) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 390 * s,
-          height: 133 * s,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF4F8FF),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30 * s),
-              topRight: Radius.circular(30 * s),
-            ),
-            border: const Border(
-              top: BorderSide(color: Color(0xFFEDF0F5), width: 1.5),
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: Color.fromRGBO(166, 166, 166, 0.1),
-                blurRadius: 4,
-                spreadRadius: 2,
-                offset: Offset(0, -1),
-              ),
-              BoxShadow(
-                color: Color.fromRGBO(0, 0, 0, 0.25),
-                blurRadius: 4,
-                spreadRadius: 0,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              // "$month월 출석 포인트": top 19, left 22
-              Positioned(
-                top: 19 * s,
-                left: 22 * s,
-                child: Text(
-                  '$month월 출석 포인트',
-                  style: GoogleFonts.inter(
-                    fontSize: 15 * s,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF272727),
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-              ),
-              // "0": top 11, left 248, fontSize 30
-              Positioned(
-                top: 11 * s,
-                left: 248 * s,
-                child: Text(
-                  '0',
-                  style: GoogleFonts.inter(
-                    fontSize: 30 * s,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF2D6CEB),
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-              ),
-              // "/ 2,000P": top 15, left 274, fontSize 23
-              Positioned(
-                top: 15 * s,
-                left: 274 * s,
-                child: Text(
-                  '/ 2,000P',
-                  style: GoogleFonts.inter(
-                    fontSize: 23 * s,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4B4B4B),
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-              ),
-              // 진행 바: top 52, left 19, 352×9
-              Positioned(
-                top: 52 * s,
-                left: 19 * s,
-                child: Container(
-                  width: 352 * s,
-                  height: 9 * s,
+    const double btnDiam = 28.0;
+    const double btnHalf = btnDiam / 2; // 14
+    const double panelH = 133.0 + 34.0; // 167
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      height: (_isExpanded ? btnHalf + panelH : btnHalf) * s,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // 포인트 패널 (top: btnHalf*s, 접히면 컨테이너 밖으로 잘림)
+          Positioned(
+            top: btnHalf * s,
+            left: 0,
+            right: 0,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 390 * s,
+                  height: 133 * s,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD9D9D9),
-                    borderRadius: BorderRadius.circular(10 * s),
-                  ),
-                ),
-              ),
-              // 출석하고 포인트 받기 버튼: top 82, left 15, 360×41
-              Positioned(
-                top: 82 * s,
-                left: 15 * s,
-                child: GestureDetector(
-                  onTap: _checkedIn ? null : () => setState(() => _checkedIn = true),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    width: 360 * s,
-                    height: 41 * s,
-                    decoration: BoxDecoration(
-                      color: _checkedIn
-                          ? const Color(0xFF838383)
-                          : const Color(0xFF2D6CEB),
-                      borderRadius: BorderRadius.circular(10 * s),
+                    color: const Color(0xFFF4F8FF),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30 * s),
+                      topRight: Radius.circular(30 * s),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      _checkedIn ? '출석완료' : '출석하고 포인트 받기',
-                      style: GoogleFonts.inter(
-                        fontSize: 13 * s,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        decoration: TextDecoration.none,
+                    border: const Border(
+                      top: BorderSide(color: Color(0xFFEDF0F5), width: 1.5),
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(166, 166, 166, 0.1),
+                        blurRadius: 4,
+                        spreadRadius: 2,
+                        offset: Offset(0, -1),
                       ),
-                    ),
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.25),
+                        blurRadius: 4,
+                        spreadRadius: 0,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        top: 19 * s,
+                        left: 22 * s,
+                        child: Text(
+                          '$month월 출석 포인트',
+                          style: GoogleFonts.inter(
+                            fontSize: 15 * s,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF272727),
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 11 * s,
+                        left: 248 * s,
+                        child: Text(
+                          '0',
+                          style: GoogleFonts.inter(
+                            fontSize: 30 * s,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF2D6CEB),
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 15 * s,
+                        left: 274 * s,
+                        child: Text(
+                          '/ 2,000P',
+                          style: GoogleFonts.inter(
+                            fontSize: 23 * s,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF4B4B4B),
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 52 * s,
+                        left: 19 * s,
+                        child: Container(
+                          width: 352 * s,
+                          height: 9 * s,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD9D9D9),
+                            borderRadius: BorderRadius.circular(10 * s),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 82 * s,
+                        left: 15 * s,
+                        child: GestureDetector(
+                          onTap: _checkedIn ? null : () => setState(() => _checkedIn = true),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            width: 360 * s,
+                            height: 41 * s,
+                            decoration: BoxDecoration(
+                              color: _checkedIn
+                                  ? const Color(0xFF838383)
+                                  : const Color(0xFF2D6CEB),
+                              borderRadius: BorderRadius.circular(10 * s),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              _checkedIn ? '출석완료' : '출석하고 포인트 받기',
+                              style: GoogleFonts.inter(
+                                fontSize: 13 * s,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 390 * s,
+                  height: 34 * s,
+                  color: const Color(0xFFF4F8FF),
+                ),
+              ],
+            ),
+          ),
+          // 토글 버튼 (항상 top: 0)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: GestureDetector(
+                onTap: () => setState(() => _isExpanded = !_isExpanded),
+                child: Container(
+                  width: btnDiam * s,
+                  height: btnDiam * s,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color.fromRGBO(0, 0, 0, 0.15),
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    _isExpanded ? Icons.keyboard_arrow_down : Icons.keyboard_arrow_up,
+                    size: 18 * s,
+                    color: const Color(0xFF6C6C6C),
                   ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-        // 스와이프바
-        Container(
-          width: 390 * s,
-          height: 34 * s,
-          color: const Color(0xFFF4F8FF),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
