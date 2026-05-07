@@ -85,7 +85,7 @@ class _AttendancePageState extends State<AttendancePage> {
     return ThemeColorScope(
       color: '#F4F8FF',
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: const Color(0xFFF4F8FF),
         body: Column(
           children: [
             _buildHeader(context, topPadding, s),
@@ -775,9 +775,7 @@ class _AttendancePageState extends State<AttendancePage> {
   // ── 출석포인트 하단 고정 ──────────────────────────────────────────
 
   Widget _buildFixedPointsSection(double s, int month) {
-    return Container(
-      color: Colors.white,
-      child: Column(
+    return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Rectangle 1440: 토글 탭 버튼 (45×15, 상단 좌우 10px r, 패널 위 노출)
@@ -938,7 +936,6 @@ class _AttendancePageState extends State<AttendancePage> {
           color: const Color(0xFFF4F8FF),
         ),
       ],
-      ),
     );
   }
 }
