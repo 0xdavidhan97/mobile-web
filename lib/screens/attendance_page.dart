@@ -12,6 +12,22 @@ class _AttendancePageState extends State<AttendancePage> {
   bool _notificationOn = true;
   bool _checkedIn = false;
 
+  // 달력 컬럼 positions (card-relative, card left=10)
+  // 기준: row2 절대값 [38,88,140,187,238,287,338] - 10
+  static const List<double> _colPositions = [28, 78, 130, 177, 228, 277, 328];
+  static const List<String> _weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+
+  static const List<int> _itemLefts = [
+    36, 105, 174, 243, 312, 381, 450, 519, 588, 657,
+    726, 795, 864, 933, 1002, 1071, 1140, 1209, 1278, 1347,
+    1416, 1485, 1554, 1623, 1692, 1761, 1830, 1899, 1968, 2037,
+  ];
+  static const Map<int, String> _bonusPoints = {
+    3: '50P', 7: '100P', 10: '150P', 14: '200P',
+    17: '220P', 20: '250P', 25: '350P',
+  };
+  static const Set<int> _starDays = {3, 7, 10, 14, 17, 20, 25};
+
   @override
   Widget build(BuildContext context) {
     final double topPadding = MediaQuery.of(context).padding.top;
@@ -21,15 +37,17 @@ class _AttendancePageState extends State<AttendancePage> {
     final int year = now.year;
     final int month = now.month;
     final int daysInMonth = DateTime(year, month + 1, 0).day;
-    // weekday: 1=Mon..6=Sat,7=Sun → col: 0=일,1=월..6=토
     final int startCol = DateTime(year, month, 1).weekday % 7;
-    final int totalCells = startCol + daysInMonth;
-    final int numRows = (totalCells + 6) ~/ 7;
-    final bool sixRows = numRows >= 6;
-    final double calCardHeight = sixRows ? 484.0 : 437.0;
-    final double buttonTopInCard = sixRows ? 407.0 : 360.0;
-    final double bonusCardTop = 46.0 + calCardHeight + 15.0;
-    final double contentHeight = bonusCardTop + 226.0 + 20.0;
+    final int numRows = (startCol + daysInMonth + 6) ~/ 7;
+
+    // 달력 카드 높이: 5행 기준 376, 행 추가 시 47씩
+    final double calCardHeight = 124.0 + numRows * 47.0 + 16.0;
+
+    // scroll-relative 좌표 (절대값 - 115)
+    const double calCardTop = 72.0;   // 187 - 115
+    final double bonusCardTop = calCardTop + calCardHeight + 12.0;
+    final double miningCardTop = bonusCardTop + 226.0 + 24.0;
+    final double contentHeight = miningCardTop + 226.0 + 20.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
@@ -42,70 +60,37 @@ class _AttendancePageState extends State<AttendancePage> {
                 height: contentHeight * s,
                 child: Stack(
                   children: [
-                    // 매일 출석체크 알림받기 텍스트: rel top 15, left 208
+                    // 상단 #FFFFFF 배경 (absolute 754px = relative 639px까지)
                     Positioned(
-                      top: 15 * s,
-                      left: 208 * s,
-                      child: Text(
-                        '매일 출석체크 알림받기',
-                        style: GoogleFonts.inter(
-                          fontSize: 12 * s,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF6C6C6C),
-                          decoration: TextDecoration.none,
-                        ),
-                      ),
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(height: 639 * s, color: Colors.white),
                     ),
-                    // 토글: rel top 12, left 331
+                    // my_header2: relative top 0
                     Positioned(
-                      top: 12 * s,
-                      left: 331 * s,
-                      child: GestureDetector(
-                        onTap: () => setState(() => _notificationOn = !_notificationOn),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: 40 * s,
-                          height: 22 * s,
-                          decoration: BoxDecoration(
-                            color: _notificationOn
-                                ? const Color(0xFF3B79F5)
-                                : const Color(0xFFCCCCCC),
-                            borderRadius: BorderRadius.circular(50 * s),
-                          ),
-                          child: AnimatedAlign(
-                            duration: const Duration(milliseconds: 200),
-                            alignment: _notificationOn
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: Padding(
-                              padding: EdgeInsets.all(2 * s),
-                              child: Container(
-                                width: 18 * s,
-                                height: 18 * s,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: _buildMyHeader2(s),
                     ),
-                    // 달력 카드: rel top 46, left 6
+                    // 달력 카드: relative top 72, left 10
                     Positioned(
-                      top: 46 * s,
-                      left: 6 * s,
-                      child: _buildCalendarCard(
-                        s, year, month, daysInMonth, startCol,
-                        calCardHeight, buttonTopInCard,
-                      ),
+                      top: calCardTop * s,
+                      left: 10 * s,
+                      child: _buildCalendarCard(s, year, month, daysInMonth, startCol, calCardHeight),
                     ),
-                    // 출석 보너스 달성 현황 카드
+                    // 출석 보너스 달성 현황
                     Positioned(
                       top: bonusCardTop * s,
-                      left: 6 * s,
+                      left: 10 * s,
                       child: _buildBonusCard(s),
+                    ),
+                    // 포인트 채굴
+                    Positioned(
+                      top: miningCardTop * s,
+                      left: 10 * s,
+                      child: _buildMiningCard(s),
                     ),
                   ],
                 ),
@@ -118,53 +103,174 @@ class _AttendancePageState extends State<AttendancePage> {
     );
   }
 
+  // ── 헤더 (DI 그라데이션 + 헤더바) ────────────────────────────────
+
   Widget _buildHeader(BuildContext context, double topPadding, double s) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // DI 영역: linear-gradient(180deg, #CFE1FF -17.8%, #F4F8FF 100%)
+        Container(
+          height: topPadding,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFCFE1FF), Color(0xFFF4F8FF)],
+            ),
+          ),
+        ),
+        // 헤더바: #F4F8FF
+        Container(
+          height: 56 * s,
+          color: const Color(0xFFF4F8FF),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 15 * s,
+                top: 16 * s,
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Image.asset('assets/arrow_back.png', width: 25 * s, height: 25 * s),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                top: 18 * s,
+                child: Text(
+                  '출석체크',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 16 * s,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── my_header2 (신규) ─────────────────────────────────────────────
+  // absolute top 115, height 69 → scroll-relative top 0
+
+  Widget _buildMyHeader2(double s) {
     return Container(
-      color: Colors.white,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      height: 69 * s,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFF4F8FF), Colors.white],
+          stops: [0.0, 0.7115],
+        ),
+      ),
+      child: Stack(
         children: [
-          SizedBox(height: topPadding),
-          SizedBox(
-            height: 56 * s,
-            child: Stack(
-              children: [
-                // 뒤로가기 버튼: left 15, top 16
-                Positioned(
-                  left: 15 * s,
-                  top: 16 * s,
-                  child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Image.asset(
-                      'assets/arrow_back.png',
-                      width: 25 * s,
-                      height: 25 * s,
+          // "매일 출석하고 보너스 포인트 받으세요!": top 122-115=7, left 15
+          Positioned(
+            top: 7 * s,
+            left: 15 * s,
+            child: Text(
+              '매일 출석하고 보너스 포인트 받으세요!',
+              style: GoogleFonts.inter(
+                fontSize: 11 * s,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF6C6C6C),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          // "0" 출석 일수: top 144-115=29, left 19
+          Positioned(
+            top: 29 * s,
+            left: 19 * s,
+            child: Text(
+              '0',
+              style: GoogleFonts.inter(
+                fontSize: 25 * s,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF272727),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          // "일째 출석중": top 155-115=40, left 39
+          Positioned(
+            top: 40 * s,
+            left: 39 * s,
+            child: Text(
+              '일째 출석중',
+              style: GoogleFonts.inter(
+                fontSize: 12 * s,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF6C6C6C),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          // "출석체크 알림받기": top 158-115=43, left 255
+          Positioned(
+            top: 43 * s,
+            left: 255 * s,
+            child: Text(
+              '출석체크 알림받기',
+              style: GoogleFonts.inter(
+                fontSize: 11 * s,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF8B8B8B),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          // 토글: top 156-115=41, left 344, width 36, height 18
+          Positioned(
+            top: 41 * s,
+            left: 344 * s,
+            child: GestureDetector(
+              onTap: () => setState(() => _notificationOn = !_notificationOn),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 36 * s,
+                height: 18 * s,
+                decoration: BoxDecoration(
+                  color: _notificationOn
+                      ? const Color(0xFF3B79F5)
+                      : const Color(0xFFCCCCCC),
+                  borderRadius: BorderRadius.circular(50 * s),
+                ),
+                child: AnimatedAlign(
+                  duration: const Duration(milliseconds: 200),
+                  alignment: _notificationOn
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.all(1 * s),
+                    child: Container(
+                      width: 16 * s,
+                      height: 16 * s,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
                 ),
-                // 헤더 타이틀 "출석체크" 가운데 정렬
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 18 * s,
-                  child: Text(
-                    '출석체크',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 16 * s,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],
       ),
     );
   }
+
+  // ── 달력 카드 ─────────────────────────────────────────────────────
+  // absolute: left 10, top 187, width 370
 
   Widget _buildCalendarCard(
     double s,
@@ -173,11 +279,7 @@ class _AttendancePageState extends State<AttendancePage> {
     int daysInMonth,
     int startCol,
     double cardHeight,
-    double buttonTop,
   ) {
-    const List<String> weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-    const List<double> colPositions = [32, 82, 133, 183, 234, 284, 335];
-
     final List<Widget> dateWidgets = [];
     for (int day = 1; day <= daysInMonth; day++) {
       final int idx = startCol + day - 1;
@@ -185,7 +287,7 @@ class _AttendancePageState extends State<AttendancePage> {
       final int row = idx ~/ 7;
       dateWidgets.add(
         Positioned(
-          left: colPositions[col] * s,
+          left: _colPositions[col] * s,
           top: (124 + row * 47) * s,
           child: Text(
             '$day',
@@ -201,7 +303,7 @@ class _AttendancePageState extends State<AttendancePage> {
     }
 
     return Container(
-      width: 378 * s,
+      width: 370 * s,
       height: cardHeight * s,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -245,13 +347,13 @@ class _AttendancePageState extends State<AttendancePage> {
               ),
             ),
           ),
-          // 요일 헤더: top 91
+          // 요일 헤더: top 278-187=91
           for (int i = 0; i < 7; i++)
             Positioned(
               top: 91 * s,
-              left: colPositions[i] * s,
+              left: _colPositions[i] * s,
               child: Text(
-                weekdays[i],
+                _weekdays[i],
                 style: GoogleFonts.inter(
                   fontSize: 12 * s,
                   fontWeight: FontWeight.w500,
@@ -260,75 +362,31 @@ class _AttendancePageState extends State<AttendancePage> {
                 ),
               ),
             ),
-          // 날짜 (동적 렌더링)
+          // 날짜 (동적)
           ...dateWidgets,
-          // 출석체크 버튼: left 86, width 206×48
-          Positioned(
-            top: buttonTop * s,
-            left: 86 * s,
-            child: GestureDetector(
-              onTap: _checkedIn ? null : () => setState(() => _checkedIn = true),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: 206 * s,
-                height: 48 * s,
-                decoration: BoxDecoration(
-                  color: _checkedIn
-                      ? const Color(0xFF838383)
-                      : const Color(0xFF2D6CEB),
-                  borderRadius: BorderRadius.circular(15 * s),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/cobak_logo.png',
-                      width: 16 * s,
-                      height: 16 * s,
-                    ),
-                    SizedBox(width: 3 * s),
-                    Text(
-                      _checkedIn ? '출석완료' : '출석체크',
-                      style: GoogleFonts.inter(
-                        fontSize: 13 * s,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        decoration: TextDecoration.none,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
   }
 
-  // ── 출석 보너스 달성 현황 카드 ──────────────────────────────────
-
-  static const List<int> _itemLefts = [
-    36, 105, 174, 243, 312, 381, 450, 519, 588, 657,
-    726, 795, 864, 933, 1002, 1071, 1140, 1209, 1278, 1347,
-    1416, 1485, 1554, 1623, 1692, 1761, 1830, 1899, 1968, 2037,
-  ];
-
-  static const Map<int, String> _bonusPoints = {
-    3: '50P', 7: '100P', 10: '150P', 14: '200P',
-    17: '220P', 20: '250P', 25: '350P',
-  };
-
-  static const Set<int> _starDays = {3, 7, 10, 14, 17, 20, 25};
+  // ── 출석 보너스 달성 현황 ──────────────────────────────────────────
+  // absolute: left 10, top 575, width 370, height 226
 
   Widget _buildBonusCard(double s) {
     return Container(
-      width: 378 * s,
+      width: 370 * s,
       height: 226 * s,
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border.all(color: const Color(0xFFEDF0F5), width: 1.5),
         borderRadius: BorderRadius.circular(30 * s),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(87, 87, 87, 0.25),
+            blurRadius: 3,
+            spreadRadius: 0,
+            offset: Offset(0, 0),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(30 * s),
@@ -369,9 +427,7 @@ class _AttendancePageState extends State<AttendancePage> {
                 physics: const ClampingScrollPhysics(),
                 child: SizedBox(
                   width: 2102 * s,
-                  child: Stack(
-                    children: _buildBonusStackChildren(s),
-                  ),
+                  child: Stack(children: _buildBonusStackChildren(s)),
                 ),
               ),
             ),
@@ -383,11 +439,11 @@ class _AttendancePageState extends State<AttendancePage> {
   }
 
   List<Widget> _buildBonusStackChildren(double s) {
-    const double speechTop = 4;   // 말풍선 top (circTop - 42)
-    const double circTop = 46;    // 원 top
-    const double connY = 66;      // 연결선 center Y (circTop + 20)
-    const double lblTop = 91;     // 라벨 top (circTop + 41 + 4)
-    const double latePtTop = 111; // 26~30일차 100P top (lblTop + 13 + 7)
+    const double speechTop = 4;
+    const double circTop = 46;
+    const double connY = 66;
+    const double lblTop = 91;
+    const double latePtTop = 111;
 
     final List<Widget> children = [];
 
@@ -398,7 +454,6 @@ class _AttendancePageState extends State<AttendancePage> {
       final String? point = _bonusPoints[day];
       final bool isLate = day >= 26;
 
-      // 말풍선 (보너스 일차만)
       if (point != null) {
         children.add(Positioned(
           left: left * s,
@@ -407,7 +462,6 @@ class _AttendancePageState extends State<AttendancePage> {
         ));
       }
 
-      // 원형 아이콘 (모두 #E6E6E6)
       children.add(Positioned(
         left: left * s,
         top: circTop * s,
@@ -420,33 +474,19 @@ class _AttendancePageState extends State<AttendancePage> {
           ),
           alignment: Alignment.center,
           child: isStar
-              ? Icon(
-                  Icons.star,
-                  size: 20 * s,
-                  color: Colors.white,
-                )
-              : Icon(
-                  Icons.check,
-                  size: 14 * s,
-                  color: Colors.white,
-                ),
+              ? Icon(Icons.star, size: 20 * s, color: Colors.white)
+              : Icon(Icons.check, size: 14 * s, color: Colors.white),
         ),
       ));
 
-      // 연결선 (마지막 아이템 제외)
       if (i < 29) {
         children.add(Positioned(
           left: (left + 42) * s,
           top: connY * s,
-          child: Container(
-            width: 26 * s,
-            height: 2,
-            color: const Color(0xFFE6E6E6),
-          ),
+          child: Container(width: 26 * s, height: 2, color: const Color(0xFFE6E6E6)),
         ));
       }
 
-      // 일차 라벨
       children.add(Positioned(
         left: left * s,
         top: lblTop * s,
@@ -463,7 +503,6 @@ class _AttendancePageState extends State<AttendancePage> {
         ),
       ));
 
-      // 26~30일차 100P 텍스트
       if (isLate) {
         children.add(Positioned(
           left: left * s,
@@ -487,13 +526,207 @@ class _AttendancePageState extends State<AttendancePage> {
     return children;
   }
 
+  Widget _buildSpeechBubble(double s, String point) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 41 * s,
+          height: 36 * s,
+          decoration: BoxDecoration(
+            color: const Color(0xFFD4EAFF),
+            borderRadius: BorderRadius.circular(6 * s),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            point,
+            style: GoogleFonts.inter(
+              fontSize: 12 * s,
+              fontWeight: FontWeight.w600,
+              fontStyle: FontStyle.italic,
+              color: const Color(0xFF2D6CEB),
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ),
+        CustomPaint(
+          size: Size(8 * s, 6 * s),
+          painter: const _TailPainter(Color(0xFFD4EAFF)),
+        ),
+      ],
+    );
+  }
+
+  // ── 포인트 채굴 ───────────────────────────────────────────────────
+  // absolute: left 10, top 825, width 370, height 226
+  // card-internal = absolute - 825 (top), absolute_left - 10 (left)
+
+  Widget _buildMiningCard(double s) {
+    return Container(
+      width: 370 * s,
+      height: 226 * s,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10 * s),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromRGBO(87, 87, 87, 0.25),
+            blurRadius: 3,
+            spreadRadius: 0,
+            offset: Offset(0, 0),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // 포인트 채굴하기: 846-825=21, left 27-10=17
+          Positioned(
+            top: 21 * s,
+            left: 17 * s,
+            child: Text(
+              '포인트 채굴하기',
+              style: GoogleFonts.inter(
+                fontSize: 15 * s,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF272727),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          // Mission 1: write.png (878-825=53), 게시글 (880-825=55), 50P
+          Positioned(
+            top: 53 * s,
+            left: 27 * s,
+            child: Image.asset('assets/write.png', width: 22 * s, height: 22 * s),
+          ),
+          Positioned(
+            top: 55 * s,
+            left: 57 * s,
+            child: Text(
+              '게시글 1회 작성하기',
+              style: GoogleFonts.inter(
+                fontSize: 15 * s,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF6C6C6C),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 55 * s,
+            left: 295 * s,
+            child: Text(
+              '50P',
+              style: GoogleFonts.inter(
+                fontSize: 15 * s,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF2D6CEB),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          // Mission 2: image2834.png (917-825=92), 댓글 (919-825=94), 50P
+          Positioned(
+            top: 92 * s,
+            left: 27 * s,
+            child: Image.asset('assets/image2834.png', width: 22 * s, height: 22 * s),
+          ),
+          Positioned(
+            top: 94 * s,
+            left: 57 * s,
+            child: Text(
+              '댓글 5회 작성하기',
+              style: GoogleFonts.inter(
+                fontSize: 15 * s,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF6C6C6C),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 94 * s,
+            left: 295 * s,
+            child: Text(
+              '50P',
+              style: GoogleFonts.inter(
+                fontSize: 15 * s,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF2D6CEB),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          // Mission 3: image2833.png (956-825=131), 투자정보 (958-825=133), 100P
+          Positioned(
+            top: 131 * s,
+            left: 27 * s,
+            child: Image.asset('assets/image2833.png', width: 22 * s, height: 22 * s),
+          ),
+          Positioned(
+            top: 133 * s,
+            left: 57 * s,
+            child: Text(
+              '투자정보 페이지 방문하기',
+              style: GoogleFonts.inter(
+                fontSize: 15 * s,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF6C6C6C),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 133 * s,
+            left: 295 * s,
+            child: Text(
+              '100P',
+              style: GoogleFonts.inter(
+                fontSize: 15 * s,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF2D6CEB),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          // 전체보기 버튼: 994-825=169, left 27, width 315, height 40
+          Positioned(
+            top: 169 * s,
+            left: 27 * s,
+            child: Container(
+              width: 315 * s,
+              height: 40 * s,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE6E6E6),
+                borderRadius: BorderRadius.circular(10 * s),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '전체보기',
+                style: GoogleFonts.inter(
+                  fontSize: 14 * s,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF595959),
+                  decoration: TextDecoration.none,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── 출석포인트 하단 고정 ──────────────────────────────────────────
+
   Widget _buildFixedPointsSection(double s, int month) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 390 * s,
-          height: 170 * s,
+          height: 160 * s,
           decoration: BoxDecoration(
             color: const Color(0xFFF4F8FF),
             borderRadius: BorderRadius.only(
@@ -504,6 +737,12 @@ class _AttendancePageState extends State<AttendancePage> {
               top: BorderSide(color: Color(0xFFEDF0F5), width: 1.5),
             ),
             boxShadow: const [
+              BoxShadow(
+                color: Color.fromRGBO(166, 166, 166, 0.1),
+                blurRadius: 4,
+                spreadRadius: 2,
+                offset: Offset(0, -1),
+              ),
               BoxShadow(
                 color: Color.fromRGBO(0, 0, 0, 0.25),
                 blurRadius: 4,
@@ -569,53 +808,32 @@ class _AttendancePageState extends State<AttendancePage> {
                   ),
                 ),
               ),
-              // 구분선: top 109, left 11.35, width 367.3
+              // 출석하고 포인트 받기 버튼: top 109, left 15, 360×41
               Positioned(
                 top: 109 * s,
-                left: 11.35 * s,
-                child: Container(
-                  width: 367.3 * s,
-                  height: 1.5,
-                  color: const Color(0xFFD9D9D9),
-                ),
-              ),
-              // info 아이콘: top 124.91, left 15.56
-              Positioned(
-                top: 124.91 * s,
-                left: 15.56 * s,
-                child: Icon(Icons.info_outline, size: 11.17 * s, color: const Color(0xFF6C6C6C)),
-              ),
-              // "멤버십 등급에 따라...": top 124, left 30
-              Positioned(
-                top: 124 * s,
-                left: 30 * s,
-                child: Text(
-                  '멤버십 등급에 따라 최대 포인트가 달라져요',
-                  style: GoogleFonts.inter(
-                    fontSize: 11 * s,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF6C6C6C),
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-              ),
-              // bolt 아이콘: top 145.91, left 15.56
-              Positioned(
-                top: 145.91 * s,
-                left: 15.56 * s,
-                child: Icon(Icons.bolt, size: 11.17 * s, color: const Color(0xFF6C6C6C)),
-              ),
-              // "매일 출석하면...": top 145, left 30
-              Positioned(
-                top: 145 * s,
-                left: 30 * s,
-                child: Text(
-                  '매일 출석하면 이번 달 2,000P를 모두 받을 수 있어요',
-                  style: GoogleFonts.inter(
-                    fontSize: 11 * s,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF6C6C6C),
-                    decoration: TextDecoration.none,
+                left: 15 * s,
+                child: GestureDetector(
+                  onTap: _checkedIn ? null : () => setState(() => _checkedIn = true),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: 360 * s,
+                    height: 41 * s,
+                    decoration: BoxDecoration(
+                      color: _checkedIn
+                          ? const Color(0xFF838383)
+                          : const Color(0xFF2D6CEB),
+                      borderRadius: BorderRadius.circular(10 * s),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      _checkedIn ? '출석완료' : '출석하고 포인트 받기',
+                      style: GoogleFonts.inter(
+                        fontSize: 13 * s,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -627,38 +845,6 @@ class _AttendancePageState extends State<AttendancePage> {
           width: 390 * s,
           height: 34 * s,
           color: const Color(0xFFF4F8FF),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSpeechBubble(double s, String point) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          width: 41 * s,
-          height: 36 * s,
-          decoration: BoxDecoration(
-            color: const Color(0xFFD4EAFF),
-            borderRadius: BorderRadius.circular(6 * s),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            point,
-            style: GoogleFonts.inter(
-              fontSize: 12 * s,
-              fontWeight: FontWeight.w600,
-              fontStyle: FontStyle.italic,
-              color: const Color(0xFF2D6CEB),
-              decoration: TextDecoration.none,
-            ),
-          ),
-        ),
-        CustomPaint(
-          size: Size(8 * s, 6 * s),
-          painter: const _TailPainter(Color(0xFFD4EAFF)),
         ),
       ],
     );
