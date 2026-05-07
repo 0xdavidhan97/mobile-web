@@ -12,6 +12,25 @@ class _AttendancePageState extends State<AttendancePage> {
   bool _notificationOn = true;
   bool _checkedIn = false;
 
+  late final ScrollController _scrollController;
+  double _scrollOffset = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (mounted) setState(() => _scrollOffset = _scrollController.offset);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   // 달력 컬럼 positions (card-relative, card left=10)
   // 기준: row2 절대값 [38,88,140,187,238,287,338] - 10
   static const List<double> _colPositions = [28, 78, 130, 177, 228, 277, 328];
@@ -49,51 +68,80 @@ class _AttendancePageState extends State<AttendancePage> {
     final double miningCardTop = bonusCardTop + 226.0 + 24.0;
     final double contentHeight = miningCardTop + 226.0 + 20.0;
 
+    // ── sticky my_header2 계산 ──────────────────────────────────────
+    // calCardBottom: 달력 카드 하단 (scroll-relative)
+    // my_header2 하단(69)에 달력 카드 하단이 닿는 순간부터 함께 슬라이드 아웃
+    const double headerH = 69.0;
+    final double pinnedUntil = calCardTop + calCardHeight - headerH;
+    final double scrollDesign = s > 0 ? _scrollOffset / s : 0;
+    final double overlapAmount = scrollDesign - pinnedUntil; // 0 = 겹치기 시작, headerH = 완전히 사라짐
+    final bool showPinnedHeader = _scrollOffset > 0 && overlapAmount < headerH;
+    // slideOffset: 0 → 완전히 보임, -(headerH*s) → 완전히 사라짐
+    final double slideOffset = overlapAmount > 0 ? (-overlapAmount * s) : 0.0;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
           _buildHeader(context, topPadding, s),
           Expanded(
-            child: SingleChildScrollView(
-              child: SizedBox(
-                height: contentHeight * s,
-                child: Stack(
-                  children: [
-                    // 상단 #FFFFFF 배경 (absolute 754px = relative 639px까지)
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(height: 639 * s, color: Colors.white),
+            child: ClipRect(
+              child: Stack(
+                children: [
+                  // 스크롤 콘텐츠
+                  SingleChildScrollView(
+                    controller: _scrollController,
+                    child: SizedBox(
+                      height: contentHeight * s,
+                      child: Stack(
+                        children: [
+                          // 상단 #FFFFFF 배경 (absolute 754px = relative 639px까지)
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(height: 639 * s, color: Colors.white),
+                          ),
+                          // my_header2: 고정 중엔 spacer, 최상단일 땐 실제 위젯
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: showPinnedHeader
+                                ? SizedBox(height: headerH * s)
+                                : _buildMyHeader2(s),
+                          ),
+                          // 달력 카드: relative top 72, left 10
+                          Positioned(
+                            top: calCardTop * s,
+                            left: 10 * s,
+                            child: _buildCalendarCard(s, year, month, daysInMonth, startCol, calCardHeight),
+                          ),
+                          // 출석 보너스 달성 현황
+                          Positioned(
+                            top: bonusCardTop * s,
+                            left: 10 * s,
+                            child: _buildBonusCard(s),
+                          ),
+                          // 포인트 채굴
+                          Positioned(
+                            top: miningCardTop * s,
+                            left: 10 * s,
+                            child: _buildMiningCard(s),
+                          ),
+                        ],
+                      ),
                     ),
-                    // my_header2: relative top 0
+                  ),
+                  // 고정 오버레이: 달력 카드 하단이 my_header2 하단에 닿으면 함께 슬라이드 아웃
+                  if (showPinnedHeader)
                     Positioned(
-                      top: 0,
+                      top: slideOffset,
                       left: 0,
                       right: 0,
                       child: _buildMyHeader2(s),
                     ),
-                    // 달력 카드: relative top 72, left 10
-                    Positioned(
-                      top: calCardTop * s,
-                      left: 10 * s,
-                      child: _buildCalendarCard(s, year, month, daysInMonth, startCol, calCardHeight),
-                    ),
-                    // 출석 보너스 달성 현황
-                    Positioned(
-                      top: bonusCardTop * s,
-                      left: 10 * s,
-                      child: _buildBonusCard(s),
-                    ),
-                    // 포인트 채굴
-                    Positioned(
-                      top: miningCardTop * s,
-                      left: 10 * s,
-                      child: _buildMiningCard(s),
-                    ),
-                  ],
-                ),
+                ],
               ),
             ),
           ),
