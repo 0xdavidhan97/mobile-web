@@ -5,15 +5,18 @@ import '../widgets/info_card.dart';
 import '../widgets/section_card.dart';
 import '../widgets/ranking_card.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../utils/theme_color.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
+    return ThemeColorScope(
+      color: '#FFFFFF',
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
+        body: Column(
         children: [
           const AppHeader(),
           Expanded(
@@ -31,6 +34,7 @@ class HomeScreen extends StatelessWidget {
           ),
           const BottomNavBar(),
         ],
+        ),
       ),
     );
   }

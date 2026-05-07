@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../widgets/my_header.dart';
 import '../widgets/bottom_nav_bar.dart';
 import 'attendance_page.dart';
+import '../utils/theme_color.dart';
 
 class MyPage extends StatelessWidget {
   const MyPage({super.key});
@@ -12,9 +13,11 @@ class MyPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final double s = MediaQuery.of(context).size.width / 390;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
+    return ThemeColorScope(
+      color: '#FFFFFF',
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
+        body: Column(
         children: [
           const MyHeader(),
           Expanded(
@@ -90,6 +93,7 @@ class MyPage extends StatelessWidget {
           ),
           BottomNavBar(activeIndex: 4),
         ],
+        ),
       ),
     );
   }

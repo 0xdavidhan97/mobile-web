@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../utils/theme_color.dart';
 
 class AttendancePage extends StatefulWidget {
   const AttendancePage({super.key});
@@ -81,11 +82,13 @@ class _AttendancePageState extends State<AttendancePage> {
     // slideOffset: 0 → 완전히 보임, -(headerH*s) → 완전히 사라짐
     final double slideOffset = overlapAmount > 0 ? (-overlapAmount * s) : 0.0;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
-        children: [
-          _buildHeader(context, topPadding, s),
+    return ThemeColorScope(
+      color: '#F4F8FF',
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
+        body: Column(
+          children: [
+            _buildHeader(context, topPadding, s),
           Expanded(
             child: ClipRect(
               child: Stack(
@@ -149,6 +152,7 @@ class _AttendancePageState extends State<AttendancePage> {
           ),
           _buildFixedPointsSection(s, month),
         ],
+        ),
       ),
     );
   }

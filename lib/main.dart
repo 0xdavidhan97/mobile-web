@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
+import 'utils/theme_color.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.interTextTheme(),
         scaffoldBackgroundColor: const Color(0xFFF5F5F5),
       ),
+      navigatorObservers: [routeObserver],
       home: const HomeScreen(),
     );
   }
