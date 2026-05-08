@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/theme_color.dart';
@@ -41,7 +42,10 @@ class _AttendancePageState extends State<AttendancePage> {
 
   @override
   Widget build(BuildContext context) {
-    final double topPadding = MediaQuery.of(context).padding.top;
+    // Flutter Web이 safe area top을 0으로 반환하면 CSS env(safe-area-inset-top) fallback 사용
+    final double flutterTop = MediaQuery.of(context).padding.top;
+    final double topPadding =
+        (flutterTop > 0 || !kIsWeb) ? flutterTop : cssSafeAreaTop();
     final double s = MediaQuery.of(context).size.width / 390;
 
     final now = DateTime.now();

@@ -48,6 +48,7 @@
     body {
       /* CSS 브릿지: Flutter가 safe area를 못 읽을 때 Dart에서 getComputedStyle로 이 값을 읽어 fallback 사용 */
       padding-bottom: env(safe-area-inset-bottom, 34px);
+      padding-top: env(safe-area-inset-top);
     }
   </style>
 </head>
