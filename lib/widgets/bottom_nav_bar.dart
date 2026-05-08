@@ -21,10 +21,34 @@ double _cssSafeAreaBottom() {
   }
 }
 
+/// PWA 환경(display-mode: standalone 또는 iOS Safari standalone) 여부 반환.
+bool _isPwa() {
+  if (!kIsWeb) return false;
+  try {
+    // Android PWA / 크롬 등 display-mode: standalone
+    final mq = globalContext.callMethod<JSObject>(
+      'matchMedia'.toJS,
+      '(display-mode: standalone)'.toJS,
+    );
+    final mqMatches = mq['matches'];
+    if (mqMatches is JSBoolean && (mqMatches as JSBoolean).toDart) return true;
+    // iOS Safari 홈 화면 추가 (navigator.standalone)
+    final nav = globalContext['navigator'];
+    if (nav != null) {
+      final standalone = (nav as JSObject)['standalone'];
+      if (standalone is JSBoolean && (standalone as JSBoolean).toDart) return true;
+    }
+    return false;
+  } catch (_) {
+    return false;
+  }
+}
+
 class BottomNavBar extends StatelessWidget {
   final int activeIndex;
+  final bool showSwipeBar;
 
-  const BottomNavBar({super.key, this.activeIndex = -1});
+  const BottomNavBar({super.key, this.activeIndex = -1, this.showSwipeBar = false});
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +93,12 @@ class BottomNavBar extends StatelessWidget {
             ),
           ),
           SizedBox(height: bottomPadding),
+          // PWA 환경에서만 하단 스와이프바 표시
+          if (showSwipeBar && _isPwa())
+            SizedBox(
+              width: 390 * s,
+              height: 34 * s,
+            ),
         ],
       ),
     );

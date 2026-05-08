@@ -32,7 +32,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          const BottomNavBar(),
+          const BottomNavBar(showSwipeBar: true),
         ],
         ),
       ),

@@ -91,7 +91,7 @@ class MyPage extends StatelessWidget {
               ),
             ),
           ),
-          BottomNavBar(activeIndex: 4),
+          const BottomNavBar(activeIndex: 4, showSwipeBar: true),
         ],
         ),
       ),
