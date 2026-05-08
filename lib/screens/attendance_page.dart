@@ -173,12 +173,14 @@ class _AttendancePageState extends State<AttendancePage> {
           ),
           child: Stack(
             children: [
-              Positioned(
-                left: 15 * s,
-                top: 23 * s,
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Image.asset('assets/arrow_back.png', width: 25 * s, height: 25 * s),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.only(left: 15 * s),
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Image.asset('assets/arrow_back.png', width: 25 * s, height: 25 * s),
+                  ),
                 ),
               ),
               Positioned(
