@@ -17,25 +17,6 @@ class _AttendancePageState extends State<AttendancePage> {
 
   bool _isExpanded = true;
 
-  late final ScrollController _scrollController;
-  double _scrollOffset = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController()..addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    if (mounted) setState(() => _scrollOffset = _scrollController.offset);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
   // 달력 컬럼 positions (card-relative, card left=0, width=390)
   static const List<double> _colPositions = [38, 88, 139, 189, 240, 290, 341];
   static const List<String> _weekdays = ['일', '월', '화', '수', '목', '금', '토'];
@@ -59,17 +40,9 @@ class _AttendancePageState extends State<AttendancePage> {
 
     // scroll-relative 좌표
     // my_header2(70) →[20px]→ 보너스카드(135) →[25px]→ 달력카드
-    const double headerH = 70.0;
     const double bonusCardTop = 90.0;
     const double calCardTop = 250.0;
     final double contentHeight = calCardTop + calCardHeight + 20.0;
-
-    // ── sticky my_header2 계산 ──────────────────────────────────────
-    final double pinnedUntil = calCardTop + calCardHeight - headerH;
-    final double scrollDesign = s > 0 ? _scrollOffset / s : 0;
-    final double overlapAmount = scrollDesign - pinnedUntil;
-    final bool showPinnedHeader = _scrollOffset > 0 && overlapAmount < headerH;
-    final double slideOffset = overlapAmount > 0 ? (-overlapAmount * s) : 0.0;
 
     return ThemeColorScope(
       color: '#F4F8FF',
@@ -79,67 +52,49 @@ class _AttendancePageState extends State<AttendancePage> {
           children: [
             _buildHeader(context, topPadding, s),
             Expanded(
-              child: ClipRect(
-                child: Stack(
-                  children: [
-                    // 스크롤 콘텐츠
-                    SingleChildScrollView(
-                      controller: _scrollController,
-                      child: SizedBox(
-                        height: contentHeight * s,
-                        child: Stack(
-                          children: [
-                            // 626px 그라데이션 배경 (#F4F8FF → #EBF3FF)
-                            Positioned(
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              child: Container(
-                                height: 626 * s,
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [Color(0xFFF4F8FF), Color(0xFFEBF3FF)],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // my_header2: 고정 중엔 spacer, 최상단일 땐 실제 위젯
-                            Positioned(
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              child: showPinnedHeader
-                                  ? SizedBox(height: headerH * s)
-                                  : _buildMyHeader2(s, opaque: false),
-                            ),
-                            // 출석 보너스 달성 현황: my_header2 하단 20px 아래
-                            Positioned(
-                              top: bonusCardTop * s,
-                              left: 15 * s,
-                              child: _buildBonusCard(s),
-                            ),
-                            // 달력 카드: 보너스카드 하단 25px 아래, 전체 너비
-                            Positioned(
-                              top: calCardTop * s,
-                              left: 0,
-                              child: _buildCalendarCard(
-                                  s, year, month, daysInMonth, startCol, calCardHeight),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // 고정 오버레이
-                    if (showPinnedHeader)
+              child: SingleChildScrollView(
+                child: SizedBox(
+                  height: contentHeight * s,
+                  child: Stack(
+                    children: [
+                      // 626px 그라데이션 배경 (#F4F8FF → #EBF3FF)
                       Positioned(
-                        top: slideOffset,
+                        top: 0,
                         left: 0,
                         right: 0,
-                        child: _buildMyHeader2(s, opaque: true),
+                        child: Container(
+                          height: 626 * s,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Color(0xFFF4F8FF), Color(0xFFEBF3FF)],
+                            ),
+                          ),
+                        ),
                       ),
-                  ],
+                      // my_header2: 스크롤 콘텐츠와 함께 이동
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: _buildMyHeader2(s),
+                      ),
+                      // 출석 보너스 달성 현황: my_header2 하단 20px 아래
+                      Positioned(
+                        top: bonusCardTop * s,
+                        left: 15 * s,
+                        child: _buildBonusCard(s),
+                      ),
+                      // 달력 카드: 보너스카드 하단 25px 아래, 전체 너비
+                      Positioned(
+                        top: calCardTop * s,
+                        left: 0,
+                        child: _buildCalendarCard(
+                            s, year, month, daysInMonth, startCol, calCardHeight),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -206,13 +161,11 @@ class _AttendancePageState extends State<AttendancePage> {
   }
 
   // ── my_header2 (70px) ───────────────────────────────────────────────
-  // opaque: 핀 오버레이일 때 배경으로 스크롤 콘텐츠를 가림
-  // !opaque: 626px 그라데이션 배경이 투과되어 자연스럽게 이어짐
 
-  Widget _buildMyHeader2(double s, {bool opaque = false}) {
+  Widget _buildMyHeader2(double s) {
     return Container(
       height: 70 * s,
-      color: opaque ? const Color(0xFFF4F8FF) : Colors.transparent,
+      color: Colors.transparent,
       child: Stack(
         children: [
           // "매일 출석하고 보너스 포인트 받으세요!"
