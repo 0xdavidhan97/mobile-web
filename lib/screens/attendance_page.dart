@@ -328,20 +328,6 @@ class _AttendancePageState extends State<AttendancePage> {
       ),
       child: Stack(
         children: [
-          // 타이틀
-          Positioned(
-            top: 10 * s,
-            left: 15 * s,
-            child: Text(
-              '출석 보너스 달성 현황',
-              style: GoogleFonts.inter(
-                fontSize: 15 * s,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF272727),
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
           // 말풍선 (day 3 위, left 159)
           Positioned(
             top: 12 * s,
