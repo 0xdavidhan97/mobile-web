@@ -2,6 +2,7 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import '../utils/pwa_utils.dart';
 
 /// CSS body { padding-bottom: env(safe-area-inset-bottom) }의 계산값을 읽어 반환.
 /// Flutter Web이 MediaQuery.padding.bottom을 0으로 반환할 때 fallback으로 사용.
@@ -18,29 +19,6 @@ double _cssSafeAreaBottom() {
     return double.tryParse(raw.replaceAll('px', '')) ?? 0;
   } catch (_) {
     return 0;
-  }
-}
-
-/// PWA 환경(display-mode: standalone 또는 iOS Safari standalone) 여부 반환.
-bool _isPwa() {
-  if (!kIsWeb) return false;
-  try {
-    // Android PWA / 크롬 등 display-mode: standalone
-    final mq = globalContext.callMethod<JSObject>(
-      'matchMedia'.toJS,
-      '(display-mode: standalone)'.toJS,
-    );
-    final mqMatches = mq['matches'];
-    if (mqMatches is JSBoolean && (mqMatches as JSBoolean).toDart) return true;
-    // iOS Safari 홈 화면 추가 (navigator.standalone)
-    final nav = globalContext['navigator'];
-    if (nav != null) {
-      final standalone = (nav as JSObject)['standalone'];
-      if (standalone is JSBoolean && (standalone as JSBoolean).toDart) return true;
-    }
-    return false;
-  } catch (_) {
-    return false;
   }
 }
 
@@ -94,7 +72,7 @@ class BottomNavBar extends StatelessWidget {
           ),
           SizedBox(height: bottomPadding),
           // PWA 환경에서만 하단 스와이프바 표시
-          if (showSwipeBar && _isPwa())
+          if (showSwipeBar && isPwa())
             SizedBox(
               width: 390 * s,
               height: 34 * s,
