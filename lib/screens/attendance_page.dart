@@ -268,9 +268,106 @@ class _AttendancePageState extends State<AttendancePage> {
   // ── 출석 보너스 달성 현황 (360×135, 5-day layout) ─────────────────
 
   Widget _buildBonusCard(double s) {
-    const List<double> circleLefts = [21, 90, 159, 228, 297];
-    const List<double> lineLefts = [63, 132, 201, 270];
-    const List<double> labelLefts = [29, 97, 166, 235, 304];
+    const List<double> itemLefts = [
+      45,  114, 183, 252, 321, 390, 459, 528, 597, 666,
+      735, 804, 873, 942, 1011, 1080, 1149, 1218, 1287, 1356,
+      1425, 1494, 1563, 1632, 1701, 1770, 1839, 1908, 1977, 2046,
+    ];
+    const Map<int, String> bonusPoints = {
+      3: '50P', 7: '100P', 10: '150P', 14: '200P',
+      17: '220P', 20: '250P', 25: '350P',
+    };
+    const Set<int> starDays = {3, 7, 10, 14, 17, 20, 25};
+
+    // 카드 내부 수직 레이아웃 (card height 135px 기준)
+    const double speechTop = 4;   // 말풍선 top (36px container + 6px tail → bottom 46)
+    const double circTop   = 50;  // 원 top (height 41 → bottom 91, center 70.5)
+    const double connY     = 70;  // 연결선 top (원 수직 중앙)
+    const double lblTop    = 96;  // 일차 레이블 top
+    const double latePtTop = 111; // 26~30일차 포인트 top
+
+    final List<Widget> children = [];
+
+    for (int i = 0; i < 30; i++) {
+      final int day = i + 1;
+      final double left = itemLefts[i];
+      final bool isStar = starDays.contains(day);
+      final String? point = bonusPoints[day];
+      final bool isLate = day >= 26;
+
+      // 말풍선 (보너스 일차)
+      if (point != null) {
+        children.add(Positioned(
+          left: left * s,
+          top: speechTop * s,
+          child: _buildSpeechBubble(s, point),
+        ));
+      }
+
+      // 원형 아이콘
+      children.add(Positioned(
+        left: left * s,
+        top: circTop * s,
+        child: Container(
+          width: 41 * s,
+          height: 41 * s,
+          decoration: const BoxDecoration(
+            color: Color(0xFFE6E6E6),
+            shape: BoxShape.circle,
+          ),
+          alignment: Alignment.center,
+          child: isStar
+              ? Icon(Icons.star, size: 20 * s, color: Colors.white)
+              : Icon(Icons.check, size: 14 * s, color: Colors.white),
+        ),
+      ));
+
+      // 연결선 (마지막 아이템 제외)
+      if (i < 29) {
+        children.add(Positioned(
+          left: (left + 42) * s,
+          top: connY * s,
+          child: Container(width: 26 * s, height: 2, color: const Color(0xFFE6E6E6)),
+        ));
+      }
+
+      // 일차 레이블
+      children.add(Positioned(
+        left: left * s,
+        top: lblTop * s,
+        width: 41 * s,
+        child: Text(
+          '$day일차',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.inter(
+            fontSize: 11 * s,
+            fontWeight: FontWeight.w400,
+            color: const Color(0xFF6C6C6C),
+            decoration: TextDecoration.none,
+          ),
+        ),
+      ));
+
+      // 26~30일차 100P 포인트
+      if (isLate) {
+        children.add(Positioned(
+          left: left * s,
+          top: latePtTop * s,
+          width: 41 * s,
+          child: Text(
+            '100P',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 12 * s,
+              fontWeight: FontWeight.w600,
+              fontStyle: FontStyle.italic,
+              color: const Color(0xFF2D6CEB),
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ));
+      }
+    }
 
     return Container(
       width: 360 * s,
@@ -278,66 +375,18 @@ class _AttendancePageState extends State<AttendancePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30 * s),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(87, 87, 87, 0.25),
-            blurRadius: 3,
-            spreadRadius: 0,
-            offset: Offset(0, 0),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFFEDF0F5), width: 1.5),
       ),
-      child: Stack(
-        children: [
-          // 말풍선 (day 3 위, left 159)
-          Positioned(
-            top: 12 * s,
-            left: 159 * s,
-            child: _buildSpeechBubble(s, '50P'),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30 * s),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const ClampingScrollPhysics(),
+          child: SizedBox(
+            width: 2102 * s,
+            child: Stack(children: children),
           ),
-          // 원 (5일치)
-          for (int i = 0; i < 5; i++)
-            Positioned(
-              top: 51 * s,
-              left: circleLefts[i] * s,
-              child: Container(
-                width: 41 * s,
-                height: 41 * s,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFE6E6E6),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: i == 2
-                    ? Icon(Icons.star, size: 20 * s, color: Colors.white)
-                    : Icon(Icons.check, size: 14 * s, color: Colors.white),
-              ),
-            ),
-          // 연결선
-          for (int i = 0; i < 4; i++)
-            Positioned(
-              top: 72 * s,
-              left: lineLefts[i] * s,
-              child: Container(width: 27 * s, height: 2, color: const Color(0xFFE6E6E6)),
-            ),
-          // 일차 레이블
-          for (int i = 0; i < 5; i++)
-            Positioned(
-              top: 96 * s,
-              left: labelLefts[i] * s,
-              width: 41 * s,
-              child: Text(
-                '${i + 1}일차',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 11 * s,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF6C6C6C),
-                  decoration: TextDecoration.none,
-                ),
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }
