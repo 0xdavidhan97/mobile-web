@@ -85,14 +85,20 @@ class _AttendancePageState extends State<AttendancePage> {
                         height: contentHeight * s,
                         child: Stack(
                           children: [
-                            // 상단 #FFFFFF 배경: 보너스카드 + 달력카드까지 커버
+                            // 626px 그라데이션 배경 (#F4F8FF → #EBF3FF)
                             Positioned(
                               top: 0,
                               left: 0,
                               right: 0,
                               child: Container(
-                                height: (calCardTop + calCardHeight) * s,
-                                color: Colors.white,
+                                height: 626 * s,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [Color(0xFFF4F8FF), Color(0xFFEBF3FF)],
+                                  ),
+                                ),
                               ),
                             ),
                             // my_header2: 고정 중엔 spacer, 최상단일 땐 실제 위젯
@@ -102,7 +108,7 @@ class _AttendancePageState extends State<AttendancePage> {
                               right: 0,
                               child: showPinnedHeader
                                   ? SizedBox(height: headerH * s)
-                                  : _buildMyHeader2(s),
+                                  : _buildMyHeader2(s, opaque: false),
                             ),
                             // 출석 보너스 달성 현황: my_header2 하단 20px 아래
                             Positioned(
@@ -127,7 +133,7 @@ class _AttendancePageState extends State<AttendancePage> {
                         top: slideOffset,
                         left: 0,
                         right: 0,
-                        child: _buildMyHeader2(s),
+                        child: _buildMyHeader2(s, opaque: true),
                       ),
                   ],
                 ),
@@ -193,18 +199,14 @@ class _AttendancePageState extends State<AttendancePage> {
     );
   }
 
-  // ── my_header2 (70px, 흰색 배경) ────────────────────────────────────
+  // ── my_header2 (70px) ───────────────────────────────────────────────
+  // opaque: 핀 오버레이일 때 배경으로 스크롤 콘텐츠를 가림
+  // !opaque: 626px 그라데이션 배경이 투과되어 자연스럽게 이어짐
 
-  Widget _buildMyHeader2(double s) {
+  Widget _buildMyHeader2(double s, {bool opaque = false}) {
     return Container(
       height: 70 * s,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFF4F8FF), Color(0xFFEBF3FF)],
-        ),
-      ),
+      color: opaque ? const Color(0xFFF4F8FF) : Colors.transparent,
       child: Stack(
         children: [
           // "매일 출석하고 보너스 포인트 받으세요!"
