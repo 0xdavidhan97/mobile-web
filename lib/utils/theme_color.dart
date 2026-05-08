@@ -17,7 +17,7 @@ void setThemeColor(String color) {
       'querySelector'.toJS,
       'meta[name="theme-color"]'.toJS,
     );
-    meta?.callMethod<void>('setAttribute'.toJS, 'content'.toJS, color.toJS);
+    meta?.callMethod<JSAny?>('setAttribute'.toJS, 'content'.toJS, color.toJS);
   } catch (_) {}
 }
 
