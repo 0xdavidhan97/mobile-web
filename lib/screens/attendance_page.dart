@@ -151,10 +151,16 @@ class _AttendancePageState extends State<AttendancePage> {
           height: topPadding,
           color: isPwa() ? const Color(0xFFF4F8FF) : Colors.white,
         ),
-        // 헤더바: 46px, 흰색
+        // 헤더바: 46px, #F4F8FF
         Container(
           height: 46 * s,
-          color: Colors.white,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFF4F8FF), Color(0xFFF4F8FF)],
+            ),
+          ),
           child: Stack(
             children: [
               Positioned(
@@ -192,7 +198,13 @@ class _AttendancePageState extends State<AttendancePage> {
   Widget _buildMyHeader2(double s) {
     return Container(
       height: 70 * s,
-      color: Colors.white,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFF4F8FF), Color(0xFFEBF3FF)],
+        ),
+      ),
       child: Stack(
         children: [
           // "매일 출석하고 보너스 포인트 받으세요!"
@@ -326,20 +338,6 @@ class _AttendancePageState extends State<AttendancePage> {
                 fontSize: 15 * s,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF272727),
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
-          // 서브타이틀
-          Positioned(
-            top: 28 * s,
-            left: 15 * s,
-            child: Text(
-              '출석 횟수가 쌓일수록 더 큰 보너스를 받아요',
-              style: GoogleFonts.inter(
-                fontSize: 11 * s,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF6C6C6C),
                 decoration: TextDecoration.none,
               ),
             ),
