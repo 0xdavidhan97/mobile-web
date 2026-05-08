@@ -156,10 +156,10 @@ class _AttendancePageState extends State<AttendancePage> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // DI 영역: PWA #F4F8FF, 일반 흰색
+        // DI 영역: 항상 #F4F8FF
         Container(
           height: topPadding,
-          color: isPwa() ? const Color(0xFFF4F8FF) : Colors.white,
+          color: const Color(0xFFF4F8FF),
         ),
         // 헤더바: 46px, #F4F8FF
         Container(
