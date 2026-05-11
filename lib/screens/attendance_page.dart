@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/theme_color.dart';
 import '../utils/pwa_utils.dart';
 
@@ -14,6 +15,10 @@ class AttendancePage extends StatefulWidget {
 class _AttendancePageState extends State<AttendancePage> {
   bool _notificationOn = true;
   bool _checkedIn = false;
+  int _attendanceDays = 1;
+
+  static const _kDaysKey = 'attendance_days';
+  static const _kCheckedInKey = 'attendance_checked_in_today';
 
   bool _isExpanded = true;
   bool _noticeExpanded = false;
@@ -41,6 +46,22 @@ class _AttendancePageState extends State<AttendancePage> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
+    _loadPrefs();
+  }
+
+  Future<void> _loadPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _attendanceDays = prefs.getInt(_kDaysKey) ?? 1;
+      _checkedIn = prefs.getBool(_kCheckedInKey) ?? false;
+    });
+  }
+
+  Future<void> _savePrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kDaysKey, _attendanceDays);
+    await prefs.setBool(_kCheckedInKey, _checkedIn);
   }
 
   void _onScroll() {
@@ -329,7 +350,7 @@ class _AttendancePageState extends State<AttendancePage> {
             top: 39 * s,
             left: 19 * s,
             child: Text(
-              '0',
+              '$_attendanceDays',
               style: GoogleFonts.inter(
                 fontSize: 25 * s,
                 fontWeight: FontWeight.w600,
@@ -452,8 +473,10 @@ class _AttendancePageState extends State<AttendancePage> {
         child: Container(
           width: 41 * s,
           height: 41 * s,
-          decoration: const BoxDecoration(
-            color: Color(0xFFE6E6E6),
+          decoration: BoxDecoration(
+            color: day <= _attendanceDays
+                ? const Color(0xFF277FFF)
+                : const Color(0xFFE6E6E6),
             shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
@@ -891,7 +914,11 @@ class _AttendancePageState extends State<AttendancePage> {
                     onTap: _checkedIn
                         ? null
                         : () {
-                            setState(() => _checkedIn = true);
+                            setState(() {
+                              _checkedIn = true;
+                              _attendanceDays += 1;
+                            });
+                            _savePrefs();
                             showDialog(
                               context: context,
                               barrierDismissible: false,
