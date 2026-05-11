@@ -418,6 +418,7 @@ class _AttendancePageState extends State<AttendancePage> {
     const Map<int, String> bonusPoints = {
       3: '50P', 7: '100P', 10: '150P', 14: '200P',
       17: '220P', 20: '250P', 25: '350P',
+      26: '100P', 27: '100P', 28: '100P', 29: '100P', 30: '100P',
     };
     const Set<int> starDays = {3, 7, 10, 14, 17, 20, 25};
 
@@ -426,7 +427,6 @@ class _AttendancePageState extends State<AttendancePage> {
     const double circTop   = 50;  // 원 top (height 41 → bottom 91, center 70.5)
     const double connY     = 70;  // 연결선 top (원 수직 중앙)
     const double lblTop    = 96;  // 일차 레이블 top
-    const double latePtTop = 111; // 26~30일차 포인트 top
 
     final List<Widget> children = [];
 
@@ -435,7 +435,6 @@ class _AttendancePageState extends State<AttendancePage> {
       final double left = itemLefts[i];
       final bool isStar = starDays.contains(day);
       final String? point = bonusPoints[day];
-      final bool isLate = day >= 26;
 
       // 말풍선 (보너스 일차)
       if (point != null) {
@@ -490,25 +489,6 @@ class _AttendancePageState extends State<AttendancePage> {
         ),
       ));
 
-      // 26~30일차 100P 포인트
-      if (isLate) {
-        children.add(Positioned(
-          left: left * s,
-          top: latePtTop * s,
-          width: 41 * s,
-          child: Text(
-            '100P',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 12 * s,
-              fontWeight: FontWeight.w600,
-              fontStyle: FontStyle.italic,
-              color: const Color(0xFF2D6CEB),
-              decoration: TextDecoration.none,
-            ),
-          ),
-        ));
-      }
     }
 
     return Container(
