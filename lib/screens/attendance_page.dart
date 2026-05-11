@@ -1075,79 +1075,99 @@ class _AttendancePopupState extends State<_AttendancePopup>
               ),
               child: Column(
                 children: [
-                  SizedBox(height: 35 * s),
-                  Text(
-                    '1일차',
-                    style: GoogleFonts.inter(
-                      fontSize: 20 * s,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF272727),
-                      decoration: TextDecoration.none,
+                  // 주요 콘텐츠: 세로 균등 배치
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        // 1일차 + 출석 완료!
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '1일차',
+                              style: GoogleFonts.inter(
+                                fontSize: 20 * s,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF272727),
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                            SizedBox(height: 3 * s),
+                            Text(
+                              '출석 완료!',
+                              style: GoogleFonts.inter(
+                                fontSize: 20 * s,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF272727),
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ],
+                        ),
+                        // 로켓 애니메이션: scale 0.85↔1.0 + 대각선 float ±6px
+                        AnimatedBuilder(
+                          animation: Listenable.merge([_scaleCtrl, _floatCtrl]),
+                          builder: (context, child) => Transform.translate(
+                            offset: Offset(_dxAnim.value * s, _dyAnim.value * s),
+                            child: Transform.scale(
+                              scale: _scaleAnim.value,
+                              child: child,
+                            ),
+                          ),
+                          child: Image.asset(
+                            'assets/출석 rocket.png',
+                            width: 74 * s,
+                            height: 97 * s,
+                          ),
+                        ),
+                        // 10P 획득! + 서브텍스트
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '10P 획득!',
+                              style: GoogleFonts.inter(
+                                fontSize: 15 * s,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF272727),
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                            SizedBox(height: 5 * s),
+                            Text(
+                              '간단한 미션하고 추가 포인트 받아가세요!',
+                              style: GoogleFonts.inter(
+                                fontSize: 11 * s,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF868686),
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  SizedBox(height: 3 * s),
-                  Text(
-                    '출석 완료!',
-                    style: GoogleFonts.inter(
-                      fontSize: 20 * s,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF272727),
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                  SizedBox(height: 10 * s),
-                  // 로켓 애니메이션: scale 0.85↔1.0 + 대각선 float ±6px
-                  AnimatedBuilder(
-                    animation: Listenable.merge([_scaleCtrl, _floatCtrl]),
-                    builder: (context, child) => Transform.translate(
-                      offset: Offset(_dxAnim.value * s, _dyAnim.value * s),
-                      child: Transform.scale(
-                        scale: _scaleAnim.value,
-                        child: child,
+                  // 미션 보러가기 버튼: 하단 20px 위 고정
+                  Padding(
+                    padding: EdgeInsets.only(bottom: 20 * s),
+                    child: Container(
+                      width: 209 * s,
+                      height: 41 * s,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D6CEB),
+                        borderRadius: BorderRadius.circular(10 * s),
                       ),
-                    ),
-                    child: Image.asset(
-                      'assets/출석 rocket.png',
-                      width: 74 * s,
-                      height: 97 * s,
-                    ),
-                  ),
-                  SizedBox(height: 10 * s),
-                  Text(
-                    '10P 획득!',
-                    style: GoogleFonts.inter(
-                      fontSize: 15 * s,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF272727),
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                  SizedBox(height: 5 * s),
-                  Text(
-                    '간단한 미션하고 추가 포인트 받아가세요!',
-                    style: GoogleFonts.inter(
-                      fontSize: 11 * s,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF868686),
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                  SizedBox(height: 14 * s),
-                  Container(
-                    width: 209 * s,
-                    height: 41 * s,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2D6CEB),
-                      borderRadius: BorderRadius.circular(10 * s),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '미션 보러가기',
-                      style: GoogleFonts.inter(
-                        fontSize: 13 * s,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        decoration: TextDecoration.none,
+                      alignment: Alignment.center,
+                      child: Text(
+                        '미션 보러가기',
+                        style: GoogleFonts.inter(
+                          fontSize: 13 * s,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          decoration: TextDecoration.none,
+                        ),
                       ),
                     ),
                   ),
