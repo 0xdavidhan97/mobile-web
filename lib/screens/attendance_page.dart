@@ -935,17 +935,34 @@ class _AttendancePageState extends State<AttendancePage> {
                 SizedBox(height: 7 * s),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 19 * s),
-                  child: Container(
-                    height: 9 * s,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD9D9D9),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(20 * s),
-                        topRight: Radius.circular(20 * s),
-                        bottomLeft: Radius.circular(10 * s),
-                        bottomRight: Radius.circular(10 * s),
-                      ),
-                    ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final double totalWidth = constraints.maxWidth;
+                      final double ratio = (_earnedPoints / 2000).clamp(0.0, 1.0);
+                      return Stack(
+                        children: [
+                          // 배경 바
+                          Container(
+                            height: 9 * s,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD9D9D9),
+                              borderRadius: BorderRadius.circular(10 * s),
+                            ),
+                          ),
+                          // 채워진 바
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            height: 9 * s,
+                            width: totalWidth * ratio,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF277FFF),
+                              borderRadius: BorderRadius.circular(10 * s),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
                 SizedBox(height: 21 * s),
