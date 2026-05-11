@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/theme_color.dart';
 import '../utils/pwa_utils.dart';
 
@@ -17,8 +16,6 @@ class _AttendancePageState extends State<AttendancePage> {
   bool _checkedIn = false;
   int _attendanceDays = 1;
   int _earnedPoints = 10;
-
-  static const _kDaysKey = 'attendance_days';
 
   bool _isExpanded = true;
   bool _noticeExpanded = false;
@@ -46,20 +43,6 @@ class _AttendancePageState extends State<AttendancePage> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    _loadPrefs();
-  }
-
-  Future<void> _loadPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    setState(() {
-      _attendanceDays = prefs.getInt(_kDaysKey) ?? 1;
-    });
-  }
-
-  Future<void> _savePrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_kDaysKey, _attendanceDays);
   }
 
   void _onScroll() {
@@ -973,7 +956,6 @@ class _AttendancePageState extends State<AttendancePage> {
                               _attendanceDays += 1;
                               _earnedPoints += 10;
                             });
-                            _savePrefs();
                             showDialog(
                               context: context,
                               barrierDismissible: false,
