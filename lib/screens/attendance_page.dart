@@ -16,6 +16,7 @@ class _AttendancePageState extends State<AttendancePage> {
   bool _notificationOn = true;
   bool _checkedIn = false;
   int _attendanceDays = 1;
+  int _earnedPoints = 10;
 
   static const _kDaysKey = 'attendance_days';
   static const _kCheckedInKey = 'attendance_checked_in_today';
@@ -868,24 +869,21 @@ class _AttendancePageState extends State<AttendancePage> {
                         ),
                       ),
                       Text(
-                        '0',
+                        '$_earnedPoints',
                         style: GoogleFonts.inter(
-                          fontSize: 27 * s,
+                          fontSize: 21 * s,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF2D6CEB),
                           decoration: TextDecoration.none,
                         ),
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(top: 3 * s),
-                        child: Text(
-                          '/ 2,000P',
-                          style: GoogleFonts.inter(
-                            fontSize: 21 * s,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF4B4B4B),
-                            decoration: TextDecoration.none,
-                          ),
+                      Text(
+                        '/ 2,000P',
+                        style: GoogleFonts.inter(
+                          fontSize: 21 * s,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF4B4B4B),
+                          decoration: TextDecoration.none,
                         ),
                       ),
                     ],
@@ -917,6 +915,7 @@ class _AttendancePageState extends State<AttendancePage> {
                             setState(() {
                               _checkedIn = true;
                               _attendanceDays += 1;
+                              _earnedPoints += 10;
                             });
                             _savePrefs();
                             showDialog(
