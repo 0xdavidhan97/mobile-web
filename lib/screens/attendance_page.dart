@@ -905,7 +905,7 @@ class _AttendancePageState extends State<AttendancePage> {
                       height: 41 * s,
                       decoration: BoxDecoration(
                         color: _checkedIn
-                            ? const Color(0xFF838383)
+                            ? const Color(0xFFE4EFFF)
                             : const Color(0xFF2D6CEB),
                         borderRadius: BorderRadius.circular(10 * s),
                       ),
@@ -915,7 +915,9 @@ class _AttendancePageState extends State<AttendancePage> {
                         style: GoogleFonts.inter(
                           fontSize: 13 * s,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: _checkedIn
+                              ? const Color(0xFF85B7FF)
+                              : Colors.white,
                           decoration: TextDecoration.none,
                         ),
                       ),
