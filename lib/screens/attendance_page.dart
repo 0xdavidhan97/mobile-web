@@ -16,6 +16,7 @@ class _AttendancePageState extends State<AttendancePage> {
   bool _checkedIn = false;
 
   bool _isExpanded = true;
+  bool _noticeExpanded = false;
 
   // 달력 컬럼 positions (card-relative, card left=0, width=390)
   static const List<double> _colPositions = [38, 88, 139, 189, 240, 290, 341];
@@ -44,7 +45,7 @@ class _AttendancePageState extends State<AttendancePage> {
     const double calCardTop = 250.0;
     final double missionDivTop = calCardTop + calCardHeight + 1;  // 상단 구분선
     final double missionBgTop  = missionDivTop + 15;              // 미션 카드 배경
-    final double contentHeight = missionBgTop + 133 + 15 + 20;   // 배경+하단구분선+여백
+    final double contentHeight = missionBgTop + 133 + 15;   // 배경+하단구분선
 
     return ThemeColorScope(
       color: '#F4F8FF',
@@ -55,8 +56,11 @@ class _AttendancePageState extends State<AttendancePage> {
             _buildHeader(context, topPadding, s),
             Expanded(
               child: SingleChildScrollView(
-                child: SizedBox(
-                  height: contentHeight * s,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      height: contentHeight * s,
                   child: Stack(
                     children: [
                       // 626px 그라데이션 배경 (#F4F8FF → #EBF3FF)
@@ -195,6 +199,10 @@ class _AttendancePageState extends State<AttendancePage> {
                       ),
                     ],
                   ),
+                    ),
+                    _buildNoticeSection(s),
+                    SizedBox(height: 20 * s),
+                  ],
                 ),
               ),
             ),
@@ -625,6 +633,92 @@ class _AttendancePageState extends State<AttendancePage> {
     );
   }
 
+  // ── 안내사항 토글 섹션 ──────────────────────────────────────────────
+
+  Widget _buildNoticeSection(double s) {
+    const String noticeText =
+        '출석체크는 매일 1회 참여 가능하며, 한국시간(UTC+9) 기준 자정(00:00)에 초기화됩니다. '
+        '출석 횟수는 매월 1일 오전 12시에 리셋됩니다. '
+        '출석 회차에 따라 보너스 포인트가 지급되며, 연속 출석 여부와 관계없이 누적 횟수 기준으로 산정됩니다. '
+        '이용 중인 멤버십 등급에 따라 출석 포인트가 다르게 지급됩니다. '
+        '보너스 포인트는 해당 회차 출석 당일 자동 지급됩니다. '
+        '출석 보상은 내부 정책에 의해 변경될 수 있습니다.';
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 터치 영역 (58px)
+        GestureDetector(
+          onTap: () => setState(() => _noticeExpanded = !_noticeExpanded),
+          child: Container(
+            width: 390 * s,
+            height: 58 * s,
+            color: Colors.white,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: 20 * s,
+                  left: 19 * s,
+                  child: Text(
+                    '출석체크 안내사항',
+                    style: GoogleFonts.inter(
+                      fontSize: 15 * s,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF272727),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 25 * s,
+                  left: 353 * s,
+                  child: AnimatedRotation(
+                    turns: _noticeExpanded ? 0.5 : 0.0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: CustomPaint(
+                      size: Size(9 * s, 7 * s),
+                      painter: const _ChevronPainter(Color(0xFF8B8B8B)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // 상세 내용 (애니메이션으로 펼침/닫힘)
+        Container(
+          width: 390 * s,
+          clipBehavior: Clip.antiAlias,
+          decoration: const BoxDecoration(color: Colors.white),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            heightFactor: _noticeExpanded ? 1.0 : 0.0,
+            child: SizedBox(
+              width: 390 * s,
+              height: 200 * s,
+              child: Padding(
+                padding: EdgeInsets.only(top: 13 * s, left: 17 * s, right: 17 * s),
+                child: Text(
+                  noticeText,
+                  style: GoogleFonts.inter(
+                    fontSize: 11 * s,
+                    fontWeight: FontWeight.w500,
+                    height: 13 / 11,
+                    color: const Color(0xFF6C6C6C),
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   // ── 출석포인트 하단 고정 (기존 유지) ─────────────────────────────────
 
   Widget _buildFixedPointsSection(double s, int month) {
@@ -816,12 +910,13 @@ class _TailPainter extends CustomPainter {
 
 // "∨" 모양 화살표. AnimatedRotation(turns: 0.5)으로 "∧" 방향 전환
 class _ChevronPainter extends CustomPainter {
-  const _ChevronPainter();
+  final Color color;
+  const _ChevronPainter([this.color = const Color(0xFFA6A6A6)]);
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFA6A6A6)
+      ..color = color
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
