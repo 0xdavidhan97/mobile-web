@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/theme_color.dart';
 import '../utils/pwa_utils.dart';
+import 'my_page.dart';
 
 class AttendancePage extends StatefulWidget {
   const AttendancePage({super.key});
@@ -277,7 +278,10 @@ class _AttendancePageState extends State<AttendancePage> {
                 child: Padding(
                   padding: EdgeInsets.only(left: 15 * s),
                   child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MyPage()),
+                    ),
                     child: Image.asset('assets/arrow_back.png', width: 25 * s, height: 25 * s),
                   ),
                 ),
