@@ -244,7 +244,7 @@ class _AttendancePageState extends State<AttendancePage> {
                 ),
               ),
             ),
-            _buildFixedPointsSection(s, month),
+            _buildFixedPointsSection(context, s, month),
           ],
         ),
       ),
@@ -780,7 +780,7 @@ class _AttendancePageState extends State<AttendancePage> {
 
   // ── 출석포인트 하단 고정 (기존 유지) ─────────────────────────────────
 
-  Widget _buildFixedPointsSection(double s, int month) {
+  Widget _buildFixedPointsSection(BuildContext context, double s, int month) {
     const double panelH = 133.0;
     const double collapsedH = 23.0;
 
@@ -908,7 +908,17 @@ class _AttendancePageState extends State<AttendancePage> {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 15 * s),
                   child: GestureDetector(
-                    onTap: _checkedIn ? null : () => setState(() => _checkedIn = true),
+                    onTap: _checkedIn
+                        ? null
+                        : () {
+                            setState(() => _checkedIn = true);
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              barrierColor: Colors.black.withValues(alpha: 0.4),
+                              builder: (_) => const _AttendancePopup(),
+                            );
+                          },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: double.infinity,
@@ -991,4 +1001,188 @@ class _ChevronPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
+// ── 출석 완료 팝업 ────────────────────────────────────────────────────
+
+class _AttendancePopup extends StatefulWidget {
+  const _AttendancePopup();
+
+  @override
+  State<_AttendancePopup> createState() => _AttendancePopupState();
+}
+
+class _AttendancePopupState extends State<_AttendancePopup>
+    with TickerProviderStateMixin {
+  late final AnimationController _scaleCtrl;
+  late final AnimationController _floatCtrl;
+  late final Animation<double> _scaleAnim;
+  late final Animation<double> _dxAnim;
+  late final Animation<double> _dyAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _scaleCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _floatCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+
+    _scaleAnim = Tween<double>(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleCtrl, curve: Curves.easeInOut),
+    );
+    _dxAnim = Tween<double>(begin: -6.0, end: 6.0).animate(
+      CurvedAnimation(parent: _floatCtrl, curve: Curves.easeInOut),
+    );
+    _dyAnim = Tween<double>(begin: 6.0, end: -6.0).animate(
+      CurvedAnimation(parent: _floatCtrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _scaleCtrl.dispose();
+    _floatCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double s = MediaQuery.of(context).size.width / 390;
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: EdgeInsets.zero,
+      child: SizedBox(
+        width: 265 * s,
+        height: 307 * s,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // 팝업 컨테이너
+            Container(
+              width: 265 * s,
+              height: 307 * s,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15 * s),
+              ),
+              child: Column(
+                children: [
+                  SizedBox(height: 35 * s),
+                  Text(
+                    '1일차',
+                    style: GoogleFonts.inter(
+                      fontSize: 20 * s,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF272727),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  SizedBox(height: 3 * s),
+                  Text(
+                    '출석 완료!',
+                    style: GoogleFonts.inter(
+                      fontSize: 20 * s,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF272727),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  SizedBox(height: 10 * s),
+                  // 로켓 애니메이션: scale 0.85↔1.0 + 대각선 float ±6px
+                  AnimatedBuilder(
+                    animation: Listenable.merge([_scaleCtrl, _floatCtrl]),
+                    builder: (context, child) => Transform.translate(
+                      offset: Offset(_dxAnim.value * s, _dyAnim.value * s),
+                      child: Transform.scale(
+                        scale: _scaleAnim.value,
+                        child: child,
+                      ),
+                    ),
+                    child: Image.asset(
+                      'assets/출석 rocket.png',
+                      width: 74 * s,
+                      height: 97 * s,
+                    ),
+                  ),
+                  SizedBox(height: 10 * s),
+                  Text(
+                    '10P 획득!',
+                    style: GoogleFonts.inter(
+                      fontSize: 15 * s,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF272727),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  SizedBox(height: 5 * s),
+                  Text(
+                    '간단한 미션하고 추가 포인트 받아가세요!',
+                    style: GoogleFonts.inter(
+                      fontSize: 11 * s,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF868686),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  SizedBox(height: 14 * s),
+                  Container(
+                    width: 209 * s,
+                    height: 41 * s,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D6CEB),
+                      borderRadius: BorderRadius.circular(10 * s),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '미션 보러가기',
+                      style: GoogleFonts.inter(
+                        fontSize: 13 * s,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // X 버튼 (우측 상단)
+            Positioned(
+              top: 10 * s,
+              right: 10 * s,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 24 * s,
+                  height: 24 * s,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD9D9D9),
+                    borderRadius: BorderRadius.circular(5 * s),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'X',
+                    style: GoogleFonts.inter(
+                      fontSize: 13 * s,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF515050),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
