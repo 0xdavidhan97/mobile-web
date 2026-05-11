@@ -18,9 +18,33 @@ class _AttendancePageState extends State<AttendancePage> {
   bool _isExpanded = true;
   bool _noticeExpanded = false;
 
+  late final ScrollController _scrollController;
+  final GlobalKey _noticeSectionKey = GlobalKey();
+
   // 달력 컬럼 positions (card-relative, card left=0, width=390)
   static const List<double> _colPositions = [38, 88, 139, 189, 240, 290, 341];
   static const List<String> _weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+
+  static const List<String> _noticeItems = [
+    '출석체크는 매일 1회 참여 가능하며, 한국시간(UTC+9) 기준 자정(00:00)에 초기화됩니다.',
+    '출석 횟수는 매월 1일 오전 12시에 리셋됩니다.',
+    '출석 회차에 따라 보너스 포인트가 지급되며, 연속 출석 여부와 관계없이 누적 횟수 기준으로 산정됩니다.',
+    '이용 중인 멤버십 등급에 따라 출석 포인트가 다르게 지급됩니다.',
+    '보너스 포인트는 해당 회차 출석 당일 자동 지급됩니다.',
+    '출석 보상은 내부 정책에 의해 변경될 수 있습니다.',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +80,7 @@ class _AttendancePageState extends State<AttendancePage> {
             _buildHeader(context, topPadding, s),
             Expanded(
               child: SingleChildScrollView(
+                controller: _scrollController,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -636,20 +661,30 @@ class _AttendancePageState extends State<AttendancePage> {
   // ── 안내사항 토글 섹션 ──────────────────────────────────────────────
 
   Widget _buildNoticeSection(double s) {
-    const String noticeText =
-        '출석체크는 매일 1회 참여 가능하며, 한국시간(UTC+9) 기준 자정(00:00)에 초기화됩니다. '
-        '출석 횟수는 매월 1일 오전 12시에 리셋됩니다. '
-        '출석 회차에 따라 보너스 포인트가 지급되며, 연속 출석 여부와 관계없이 누적 횟수 기준으로 산정됩니다. '
-        '이용 중인 멤버십 등급에 따라 출석 포인트가 다르게 지급됩니다. '
-        '보너스 포인트는 해당 회차 출석 당일 자동 지급됩니다. '
-        '출석 보상은 내부 정책에 의해 변경될 수 있습니다.';
-
     return Column(
+      key: _noticeSectionKey,
       mainAxisSize: MainAxisSize.min,
       children: [
         // 터치 영역 (58px)
         GestureDetector(
-          onTap: () => setState(() => _noticeExpanded = !_noticeExpanded),
+          onTap: () {
+            final bool expanding = !_noticeExpanded;
+            setState(() => _noticeExpanded = expanding);
+            if (expanding) {
+              // 애니메이션(300ms) 완료 후 안내사항 영역이 보이도록 스크롤
+              Future.delayed(const Duration(milliseconds: 350), () {
+                if (_noticeSectionKey.currentContext != null && mounted) {
+                  Scrollable.ensureVisible(
+                    _noticeSectionKey.currentContext!,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    alignmentPolicy:
+                        ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+                  );
+                }
+              });
+            }
+          },
           child: Container(
             width: 390 * s,
             height: 58 * s,
@@ -686,35 +721,50 @@ class _AttendancePageState extends State<AttendancePage> {
             ),
           ),
         ),
-        // 상세 내용 (애니메이션으로 펼침/닫힘)
-        Container(
-          width: 390 * s,
-          clipBehavior: Clip.antiAlias,
-          decoration: const BoxDecoration(color: Colors.white),
-          child: AnimatedAlign(
+        // 상세 내용 (애니메이션으로 펼침/닫힘, 높이 가변)
+        ClipRect(
+          child: AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
             alignment: Alignment.topCenter,
-            heightFactor: _noticeExpanded ? 1.0 : 0.0,
-            child: SizedBox(
-              width: 390 * s,
-              height: 200 * s,
-              child: Padding(
-                padding: EdgeInsets.only(top: 13 * s, left: 17 * s, right: 17 * s),
-                child: Text(
-                  noticeText,
-                  style: GoogleFonts.inter(
-                    fontSize: 11 * s,
-                    fontWeight: FontWeight.w500,
-                    height: 13 / 11,
-                    color: const Color(0xFF6C6C6C),
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-              ),
-            ),
+            child: _noticeExpanded
+                ? Container(
+                    width: 390 * s,
+                    color: Colors.white,
+                    padding: EdgeInsets.fromLTRB(17 * s, 13 * s, 17 * s, 20 * s),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (int i = 0; i < _noticeItems.length; i++) ...[
+                          if (i > 0) SizedBox(height: 8 * s),
+                          _buildBulletItem(s, _noticeItems[i]),
+                        ],
+                      ],
+                    ),
+                  )
+                : SizedBox(width: 390 * s, height: 0),
           ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildBulletItem(double s, String text) {
+    final style = GoogleFonts.inter(
+      fontSize: 11 * s,
+      fontWeight: FontWeight.w500,
+      height: 13 / 11,
+      color: const Color(0xFF6C6C6C),
+      decoration: TextDecoration.none,
+    );
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(top: 1 * s, right: 5 * s),
+          child: Text('•', style: style),
+        ),
+        Expanded(child: Text(text, style: style)),
       ],
     );
   }
