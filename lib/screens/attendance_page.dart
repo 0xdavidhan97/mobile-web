@@ -19,7 +19,6 @@ class _AttendancePageState extends State<AttendancePage> {
   int _earnedPoints = 10;
 
   static const _kDaysKey = 'attendance_days';
-  static const _kCheckedInKey = 'attendance_checked_in_today';
 
   bool _isExpanded = true;
   bool _noticeExpanded = false;
@@ -55,14 +54,12 @@ class _AttendancePageState extends State<AttendancePage> {
     if (!mounted) return;
     setState(() {
       _attendanceDays = prefs.getInt(_kDaysKey) ?? 1;
-      _checkedIn = prefs.getBool(_kCheckedInKey) ?? false;
     });
   }
 
   Future<void> _savePrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_kDaysKey, _attendanceDays);
-    await prefs.setBool(_kCheckedInKey, _checkedIn);
   }
 
   void _onScroll() {
@@ -584,21 +581,80 @@ class _AttendancePageState extends State<AttendancePage> {
       final int idx = startCol + day - 1;
       final int col = idx % 7;
       final int row = idx ~/ 7;
-      dateWidgets.add(
-        Positioned(
-          left: _colPositions[col] * s,
-          top: (124 + row * 47) * s,
-          child: Text(
-            '$day',
-            style: GoogleFonts.inter(
-              fontSize: 15 * s,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF272727),
-              decoration: TextDecoration.none,
+
+      // 목업 상태: 1일 출석완료, 2일 미출석, 3일 버튼 탭 시 완료
+      Color? bgColor;
+      bool showPoints = false;
+      if (day == 1) {
+        bgColor = const Color(0xFFE4EFFF);
+        showPoints = true;
+      } else if (day == 2) {
+        bgColor = const Color(0xFFD8DBE0);
+      } else if (day == 3 && _checkedIn) {
+        bgColor = const Color(0xFFE4EFFF);
+        showPoints = true;
+      }
+
+      if (bgColor != null) {
+        // 배경 + 날짜 + 선택적 10P 텍스트
+        dateWidgets.add(
+          Positioned(
+            left: (_colPositions[col] - 8) * s,
+            top: (124 + row * 47 - 7) * s,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 25 * s,
+                  height: 32 * s,
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(5 * s),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    '$day',
+                    style: GoogleFonts.inter(
+                      fontSize: 15 * s,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF272727),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+                if (showPoints)
+                  Text(
+                    '10P',
+                    style: GoogleFonts.inter(
+                      fontSize: 11 * s,
+                      fontWeight: FontWeight.w600,
+                      fontStyle: FontStyle.italic,
+                      color: const Color(0xFF2D6CEB),
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+              ],
             ),
           ),
-        ),
-      );
+        );
+      } else {
+        dateWidgets.add(
+          Positioned(
+            left: _colPositions[col] * s,
+            top: (124 + row * 47) * s,
+            child: Text(
+              '$day',
+              style: GoogleFonts.inter(
+                fontSize: 15 * s,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF272727),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+        );
+      }
     }
 
     return Container(
