@@ -222,6 +222,19 @@ class _AttendancePageState extends State<AttendancePage> {
                                     ),
                                   ),
                                 ),
+                                // 우측 화살표
+                                Positioned(
+                                  right: 23 * s,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.chevron_right,
+                                      size: 20 * s,
+                                      color: const Color(0xFF868686),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
