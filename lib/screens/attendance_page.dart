@@ -39,10 +39,12 @@ class _AttendancePageState extends State<AttendancePage> {
     final double calCardHeight = 124.0 + numRows * 47.0 + 16.0;
 
     // scroll-relative 좌표
-    // my_header2(70) →[20px]→ 보너스카드(135) →[25px]→ 달력카드
+    // my_header2(70) →[20px]→ 보너스카드(135) →[25px]→ 달력카드 →[1px]→ 구분선 →[15px]→ 미션영역
     const double bonusCardTop = 90.0;
     const double calCardTop = 250.0;
-    final double contentHeight = calCardTop + calCardHeight + 20.0;
+    final double missionDivTop = calCardTop + calCardHeight + 1;  // 상단 구분선
+    final double missionBgTop  = missionDivTop + 15;              // 미션 카드 배경
+    final double contentHeight = missionBgTop + 133 + 15 + 20;   // 배경+하단구분선+여백
 
     return ThemeColorScope(
       color: '#F4F8FF',
@@ -92,6 +94,104 @@ class _AttendancePageState extends State<AttendancePage> {
                         left: 0,
                         child: _buildCalendarCard(
                             s, year, month, daysInMonth, startCol, calCardHeight),
+                      ),
+                      // 상단 구분선 (15px #F5F5F5)
+                      Positioned(
+                        top: missionDivTop * s,
+                        left: 0,
+                        child: Container(
+                          width: 390 * s,
+                          height: 15 * s,
+                          color: const Color(0xFFF5F5F5),
+                        ),
+                      ),
+                      // 미션 카드 배경 (390×133 흰색)
+                      Positioned(
+                        top: missionBgTop * s,
+                        left: 0,
+                        child: Container(
+                          width: 390 * s,
+                          height: 133 * s,
+                          color: Colors.white,
+                        ),
+                      ),
+                      // 타이틀 텍스트
+                      Positioned(
+                        top: (missionBgTop + 30) * s,
+                        left: 19 * s,
+                        child: Text(
+                          '간단한 미션으로 포인트 획득!',
+                          style: GoogleFonts.inter(
+                            fontSize: 15 * s,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF272727),
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                      // 미션 보러가기 터치 영역
+                      Positioned(
+                        top: (missionBgTop + 66) * s,
+                        left: 0,
+                        child: GestureDetector(
+                          onTap: () {},
+                          child: SizedBox(
+                            width: 390 * s,
+                            height: 52 * s,
+                            child: Stack(
+                              children: [
+                                // 머니백 아이콘
+                                Positioned(
+                                  top: 10 * s,
+                                  left: 25 * s,
+                                  child: Image.asset(
+                                    'assets/moneybag.png',
+                                    width: 32 * s,
+                                    height: 32 * s,
+                                  ),
+                                ),
+                                // "미션 보러가기"
+                                Positioned(
+                                  top: 7 * s,
+                                  left: 65 * s,
+                                  child: Text(
+                                    '미션 보러가기',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15 * s,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF272727),
+                                      decoration: TextDecoration.none,
+                                    ),
+                                  ),
+                                ),
+                                // 서브텍스트
+                                Positioned(
+                                  top: 29 * s,
+                                  left: 65 * s,
+                                  child: Text(
+                                    '매일 새로운 미션이 업데이트됩니다',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12 * s,
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color(0xFF868686),
+                                      decoration: TextDecoration.none,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // 하단 구분선 (15px #F5F5F5)
+                      Positioned(
+                        top: (missionBgTop + 133) * s,
+                        left: 0,
+                        child: Container(
+                          width: 390 * s,
+                          height: 15 * s,
+                          color: const Color(0xFFF5F5F5),
+                        ),
                       ),
                     ],
                   ),
