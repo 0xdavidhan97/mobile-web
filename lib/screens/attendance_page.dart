@@ -981,7 +981,7 @@ class _AttendancePageState extends State<AttendancePage> {
                               context: context,
                               barrierDismissible: false,
                               barrierColor: Colors.black.withValues(alpha: 0.4),
-                              builder: (_) => const _AttendancePopup(),
+                              builder: (_) => _AttendancePopup(day: _attendanceDays),
                             );
                           },
                     child: AnimatedContainer(
@@ -1073,7 +1073,8 @@ class _ChevronPainter extends CustomPainter {
 // ── 출석 완료 팝업 ────────────────────────────────────────────────────
 
 class _AttendancePopup extends StatefulWidget {
-  const _AttendancePopup();
+  final int day;
+  const _AttendancePopup({required this.day});
 
   @override
   State<_AttendancePopup> createState() => _AttendancePopupState();
@@ -1152,7 +1153,7 @@ class _AttendancePopupState extends State<_AttendancePopup>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              '1일차',
+                              '${widget.day}일차',
                               style: GoogleFonts.inter(
                                 fontSize: 20 * s,
                                 fontWeight: FontWeight.w600,
