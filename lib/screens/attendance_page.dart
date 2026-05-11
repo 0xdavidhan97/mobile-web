@@ -17,9 +17,11 @@ class _AttendancePageState extends State<AttendancePage> {
 
   bool _isExpanded = true;
   bool _noticeExpanded = false;
+  bool _headerWhite = false;
 
   late final ScrollController _scrollController;
   final GlobalKey _noticeSectionKey = GlobalKey();
+  double _scrollTriggerY = 0;
 
   // 달력 컬럼 positions (card-relative, card left=0, width=390)
   static const List<double> _colPositions = [38, 88, 139, 189, 240, 290, 341];
@@ -38,6 +40,14 @@ class _AttendancePageState extends State<AttendancePage> {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final bool shouldBeWhite = _scrollController.offset >= _scrollTriggerY;
+    if (shouldBeWhite != _headerWhite) {
+      setState(() => _headerWhite = shouldBeWhite);
+    }
   }
 
   @override
@@ -62,6 +72,9 @@ class _AttendancePageState extends State<AttendancePage> {
     final int numRows = (startCol + daysInMonth + 6) ~/ 7;
 
     final double calCardHeight = 124.0 + numRows * 47.0 + 16.0;
+
+    // calendar_card top이 my_header 하단에 닿는 스크롤 오프셋
+    _scrollTriggerY = 250.0 * s;
 
     // scroll-relative 좌표
     // my_header2(70) →[20px]→ 보너스카드(135) →[25px]→ 달력카드 →[1px]→ 구분선 →[15px]→ 미션영역
@@ -249,16 +262,12 @@ class _AttendancePageState extends State<AttendancePage> {
           height: topPadding,
           color: const Color(0xFFF4F8FF),
         ),
-        // 헤더바: 46px, #F4F8FF
-        Container(
+        // 헤더바: 46px, 스크롤에 따라 #F4F8FF ↔ #FFFFFF 전환
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
           height: 46 * s,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFFF4F8FF), Color(0xFFF4F8FF)],
-            ),
-          ),
+          color: _headerWhite ? Colors.white : const Color(0xFFF4F8FF),
           child: Stack(
             children: [
               Align(
