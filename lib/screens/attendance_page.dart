@@ -938,7 +938,7 @@ class _AttendancePageState extends State<AttendancePage> {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final double totalWidth = constraints.maxWidth;
-                      final double ratio = (_earnedPoints / 2000).clamp(0.0, 1.0);
+                      final double ratio = (_attendanceDays / 30).clamp(0.0, 1.0);
                       return Stack(
                         children: [
                           // 배경 바
