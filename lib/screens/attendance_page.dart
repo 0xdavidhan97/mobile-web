@@ -11,11 +11,15 @@ class AttendancePage extends StatefulWidget {
   State<AttendancePage> createState() => _AttendancePageState();
 }
 
-class _AttendancePageState extends State<AttendancePage> {
+class _AttendancePageState extends State<AttendancePage>
+    with SingleTickerProviderStateMixin {
   bool _notificationOn = true;
   bool _checkedIn = false;
   int _attendanceDays = 1;
   int _earnedPoints = 10;
+
+  late final AnimationController _shimmerCtrl;
+  late final Animation<double> _shimmerAnim;
 
   bool _isExpanded = true;
   bool _noticeExpanded = false;
@@ -43,6 +47,19 @@ class _AttendancePageState extends State<AttendancePage> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
+    _shimmerCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _shimmerAnim = CurvedAnimation(parent: _shimmerCtrl, curve: Curves.easeInOut);
+    _startShimmerLoop();
+  }
+
+  void _startShimmerLoop() {
+    Future.delayed(const Duration(milliseconds: 2000), () {
+      if (!mounted || _checkedIn) return;
+      _shimmerCtrl.forward(from: 0.0).whenComplete(_startShimmerLoop);
+    });
   }
 
   void _onScroll() {
@@ -55,6 +72,7 @@ class _AttendancePageState extends State<AttendancePage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _shimmerCtrl.dispose();
     super.dispose();
   }
 
@@ -981,6 +999,7 @@ class _AttendancePageState extends State<AttendancePage> {
                     onTap: _checkedIn
                         ? null
                         : () {
+                            _shimmerCtrl.stop();
                             setState(() {
                               _checkedIn = true;
                               _attendanceDays += 1;
@@ -993,27 +1012,62 @@ class _AttendancePageState extends State<AttendancePage> {
                               builder: (_) => _AttendancePopup(day: _attendanceDays),
                             );
                           },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: double.infinity,
-                      height: 41 * s,
-                      decoration: BoxDecoration(
-                        color: _checkedIn
-                            ? const Color(0xFFE4EFFF)
-                            : const Color(0xFF2D6CEB),
-                        borderRadius: BorderRadius.circular(10 * s),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        _checkedIn ? '출석완료' : '출석하고 포인트 받기',
-                        style: GoogleFonts.inter(
-                          fontSize: 13 * s,
-                          fontWeight: FontWeight.w600,
-                          color: _checkedIn
-                              ? const Color(0xFF85B7FF)
-                              : Colors.white,
-                          decoration: TextDecoration.none,
-                        ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10 * s),
+                      child: Stack(
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            width: double.infinity,
+                            height: 41 * s,
+                            color: _checkedIn
+                                ? const Color(0xFFE4EFFF)
+                                : const Color(0xFF2D6CEB),
+                            alignment: Alignment.center,
+                            child: Text(
+                              _checkedIn ? '출석완료' : '출석하고 포인트 받기',
+                              style: GoogleFonts.inter(
+                                fontSize: 13 * s,
+                                fontWeight: FontWeight.w600,
+                                color: _checkedIn
+                                    ? const Color(0xFF85B7FF)
+                                    : Colors.white,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                          if (!_checkedIn)
+                            Positioned.fill(
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final double w = constraints.maxWidth;
+                                  final double beamW = w * 0.5;
+                                  return AnimatedBuilder(
+                                    animation: _shimmerAnim,
+                                    builder: (context, _) {
+                                      final double dx =
+                                          _shimmerAnim.value * (w + beamW) - beamW;
+                                      return Transform.translate(
+                                        offset: Offset(dx, 0),
+                                        child: Container(
+                                          width: beamW,
+                                          decoration: const BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                Colors.transparent,
+                                                Color(0x40FFFFFF),
+                                                Colors.transparent,
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
