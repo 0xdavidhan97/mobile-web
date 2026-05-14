@@ -21,6 +21,20 @@ class _InvestPageState extends State<InvestPage> {
     ('Pre-listing', 200.0),
   ];
 
+  // (rank, korName, symbol, engName) — mock 데이터
+  static const List<(int, String, String, String)> _rankData = [
+    (1,  '코박',    'CBK',  'COBAK'),
+    (2,  '비트코인', 'BTC',  'BITCOIN'),
+    (3,  '이더리움', 'ETH',  'ETHEREUM'),
+    (4,  '리플',    'XRP',  'RIPPLE'),
+    (5,  '도지코인', 'DOGE', 'DOGECOIN'),
+    (6,  '솔라나',  'SOL',  'SOLANA'),
+    (7,  '에이다',  'ADA',  'CARDANO'),
+    (8,  '폴리곤',  'MATIC','POLYGON'),
+    (9,  '체인링크', 'LINK', 'CHAINLINK'),
+    (10, '아발란체', 'AVAX', 'AVALANCHE'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     // Safe Area: MediaQuery.padding 사용, 웹 fallback은 cssSafeAreaTop()
@@ -205,6 +219,59 @@ class _InvestPageState extends State<InvestPage> {
                         ),
                       ),
                     ),
+                    // 순위 리스트 1~10위 (1위 CSS top 330 → 카드 기준 134, 간격 52)
+                    for (int i = 0; i < _rankData.length; i++)
+                      Positioned(
+                        top: (134 + i * 52) * s,
+                        left: 11 * s, // CSS left 27 → 카드 기준 11
+                        child: _RankItem(
+                          rank: _rankData[i].$1,
+                          name: _rankData[i].$2,
+                          symbol: _rankData[i].$3,
+                          english: _rankData[i].$4,
+                          s: s,
+                        ),
+                      ),
+                    // 이전 버튼 (CSS top 909 → 713, left 23 → 7)
+                    Positioned(
+                      top: 713 * s,
+                      left: 7 * s,
+                      child: _PaginationButton(label: '<', s: s),
+                    ),
+                    // 현재 페이지 "1/5" (CSS top 902 → 706, left 172 → 156)
+                    Positioned(
+                      top: 706 * s,
+                      left: 156 * s,
+                      child: Text(
+                        '1/5',
+                        style: GoogleFonts.notoSansKr(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1A1E27),
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                    // 페이지 범위 "1위 ~ 10위" (CSS top 930 → 734, left 156 → 140)
+                    Positioned(
+                      top: 734 * s,
+                      left: 140 * s,
+                      child: Text(
+                        '1위 ~ 10위',
+                        style: GoogleFonts.notoSansKr(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF697483),
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                    // 다음 버튼 (CSS top 909 → 713, left 313 → 297)
+                    Positioned(
+                      top: 713 * s,
+                      left: 297 * s,
+                      child: _PaginationButton(label: '>', s: s),
+                    ),
                   ],
                 ),
               ),
@@ -315,6 +382,135 @@ class _InvestPageState extends State<InvestPage> {
             child: Text('투자정보', style: _navLabelStyle(s, true)),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── 순위 리스트 아이템 ─────────────────────────────────────────────────────
+
+class _RankItem extends StatelessWidget {
+  final int rank;
+  final String name;
+  final String symbol;
+  final String english;
+  final double s;
+
+  const _RankItem({
+    required this.rank,
+    required this.name,
+    required this.symbol,
+    required this.english,
+    required this.s,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // 아이템 width 326, height 52. 내부 좌표는 CSS 절대값에서 아이템 left(27) 차감.
+    return Container(
+      width: 326 * s,
+      height: 52 * s,
+      color: const Color(0xFFFFFEFE),
+      child: Stack(
+        children: [
+          // 순위 번호 (CSS left 41 → 아이템 기준 14)
+          Positioned(
+            left: 14 * s,
+            top: 19 * s, // (52-14)/2 = 19 세로 중앙
+            child: Text(
+              '$rank',
+              style: GoogleFonts.notoSansKr(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          // cobak_logo.png (CSS left 67 → 40, 32×32 세로 중앙)
+          Positioned(
+            left: 40 * s,
+            top: 10 * s, // (52-32)/2 = 10
+            child: Image.asset(
+              'assets/cobak_logo.png',
+              width: 32 * s,
+              height: 32 * s,
+            ),
+          ),
+          // 코인명 (CSS left 111 → 84)
+          Positioned(
+            left: 84 * s,
+            top: 10 * s,
+            child: Text(
+              name,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF353C49),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          // 심볼 (CSS left 146 → 119)
+          Positioned(
+            left: 119 * s,
+            top: 11 * s,
+            child: Text(
+              symbol,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF697483),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+          // 영문명 (CSS left 111 → 84, 코인명 아래)
+          Positioned(
+            left: 84 * s,
+            top: 29 * s,
+            child: Text(
+              english,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF697483),
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── 페이지네이션 버튼 ───────────────────────────────────────────────────────
+
+class _PaginationButton extends StatelessWidget {
+  final String label;
+  final double s;
+
+  const _PaginationButton({required this.label, required this.s});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 36 * s,
+      height: 36 * s,
+      decoration: BoxDecoration(
+        color: const Color(0xFFD9D9D9),
+        borderRadius: BorderRadius.circular(10 * s),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: GoogleFonts.notoSansKr(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          color: const Color(0xFF7B7B7B),
+          decoration: TextDecoration.none,
+        ),
       ),
     );
   }
