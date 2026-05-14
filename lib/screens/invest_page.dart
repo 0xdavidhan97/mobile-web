@@ -54,23 +54,28 @@ class _InvestPageState extends State<InvestPage> {
         ),
         child: Scaffold(
           backgroundColor: const Color(0xFFF5F5F5),
-          body: Column(
-          children: [
-            Container(height: topPadding, color: Colors.white),
-            _buildHeader(s),
-            _buildTabBar(s),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: _buildContent(s),
+          body: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 414),
+              child: Column(
+                children: [
+                  Container(height: topPadding, color: Colors.white),
+                  _buildHeader(s),
+                  _buildTabBar(s),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: _buildContent(s),
+                    ),
+                  ),
+                  _buildBottomNav(s, context),
+                ],
               ),
             ),
-            _buildBottomNav(s, context),
-          ],
+          ),
         ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildHeader(double s) {
