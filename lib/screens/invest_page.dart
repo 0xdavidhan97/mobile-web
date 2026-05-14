@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/pwa_utils.dart';
 import '../utils/theme_color.dart';
@@ -24,9 +25,11 @@ class _InvestPageState extends State<InvestPage>
   bool _hasScrolled = false; // 진입 후 한 번이라도 스크롤했는지
   bool _isScrolling = false;
   bool _isAchieved = false;
+  bool _isSuccessVisible = false; // 미션 성공 UI 표시 중
 
   Timer? _countdownTimer;
   Timer? _scrollStopTimer;
+  Timer? _successHideTimer;
 
   late final ScrollController _scrollController;
   late final AnimationController _floatController;
@@ -72,6 +75,7 @@ class _InvestPageState extends State<InvestPage>
     _floatController.dispose();
     _countdownTimer?.cancel();
     _scrollStopTimer?.cancel();
+    _successHideTimer?.cancel();
     super.dispose();
   }
 
@@ -105,10 +109,21 @@ class _InvestPageState extends State<InvestPage>
         if (_countdownSeconds == 0) {
           _isAchieved = true;
           _isScrolling = false;
+          _isSuccessVisible = true;
           t.cancel();
           _scrollStopTimer?.cancel();
         }
       });
+      if (_isAchieved) {
+        // light haptic
+        HapticFeedback.lightImpact();
+        // 2초 후 미션 성공 UI 자동 제거
+        _successHideTimer?.cancel();
+        _successHideTimer = Timer(const Duration(seconds: 2), () {
+          if (!mounted) return;
+          setState(() => _isSuccessVisible = false);
+        });
+      }
     });
   }
 
@@ -145,8 +160,8 @@ class _InvestPageState extends State<InvestPage>
                 SizedBox(height: bottomSafe),
               ],
             ),
-            // 카운트다운 오버레이 (하단 네비 바로 위)
-            if (widget.fromShortcut && !_isAchieved)
+            // 카운트다운 / 미션 성공 오버레이 (하단 네비 바로 위)
+            if (widget.fromShortcut && (!_isAchieved || _isSuccessVisible))
               Positioned(
                 left: 0,
                 right: 0,
@@ -472,7 +487,22 @@ class _InvestPageState extends State<InvestPage>
 
   Widget _buildCountdownBar(double s) {
     // 진입 직후(스크롤 전)는 active 상태 유지 (하늘색 + "10초" 고정)
-    final bool active = !_hasScrolled || _isScrolling;
+    final bool success = _isAchieved;
+    final bool active = !success && (!_hasScrolled || _isScrolling);
+
+    // 상태별 스타일
+    final double widthDp = success ? 185 : (active ? 81 : 206);
+    final Color bgColor = success
+        ? const Color(0xFFE0E0E0).withValues(alpha: 0.7)
+        : active
+            ? const Color(0xFFE0ECFF)
+            : const Color(0xFFFFF7E2).withValues(alpha: 0.8);
+    final Color borderColor = success
+        ? const Color(0xFF939393)
+        : active
+            ? const Color(0xFF69B7FF)
+            : const Color(0xFFFFD971);
+
     return AnimatedBuilder(
       animation: _floatAnim,
       builder: (context, child) => Transform.translate(
@@ -482,59 +512,58 @@ class _InvestPageState extends State<InvestPage>
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        width: (active ? 81 : 206) * s,
+        width: widthDp * s,
         height: 32 * s,
         decoration: BoxDecoration(
-          color: active
-              ? const Color(0xFFE0ECFF)
-              : const Color(0xFFFFF7E2).withValues(alpha: 0.8),
-          border: Border.all(
-            color: active
-                ? const Color(0xFF69B7FF)
-                : const Color(0xFFFFD971),
-            width: 1,
-          ),
+          color: bgColor,
+          border: Border.all(color: borderColor, width: 1),
           borderRadius: BorderRadius.circular(20 * s),
         ),
         alignment: Alignment.center,
         child: ClipRect(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '$_countdownSeconds초',
-                style: GoogleFonts.notoSansKr(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: active
-                      ? const Color(0xFF4A85F9)
-                      : const Color(0xFFE99C1F),
-                  decoration: TextDecoration.none,
-                ),
-              ),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: active
-                    ? const SizedBox.shrink(key: ValueKey('empty'))
-                    : Row(
-                        key: const ValueKey('pause-text'),
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(width: 6 * s),
-                          Text(
-                            '멈추지 말고 더 둘러보세요!',
-                            style: GoogleFonts.notoSansKr(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF707070),
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
-                        ],
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: success
+                ? Text(
+                    '미션 성공!',
+                    key: const ValueKey('success'),
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF7E7E7E),
+                      decoration: TextDecoration.none,
+                    ),
+                  )
+                : Row(
+                    key: ValueKey(active ? 'active' : 'pause'),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '$_countdownSeconds초',
+                        style: GoogleFonts.notoSansKr(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: active
+                              ? const Color(0xFF4A85F9)
+                              : const Color(0xFFE99C1F),
+                          decoration: TextDecoration.none,
+                        ),
                       ),
-              ),
-            ],
+                      if (!active) ...[
+                        SizedBox(width: 6 * s),
+                        Text(
+                          '멈추지 말고 더 둘러보세요!',
+                          style: GoogleFonts.notoSansKr(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF707070),
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
           ),
         ),
       ),
