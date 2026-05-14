@@ -245,15 +245,23 @@ class _InvestPageState extends State<InvestPage> {
                         color: const Color(0xFFF2F2F2),
                         borderRadius: BorderRadius.circular(10 * s),
                       ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        dateStr,
-                        style: GoogleFonts.notoSansKr(
-                          fontSize: 14 * s,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF353C49),
-                          decoration: TextDecoration.none,
-                        ),
+                      child: Stack(
+                        children: [
+                          // 날짜 텍스트 (left: 60-40=20, top: 347-340=7)
+                          Positioned(
+                            left: 20 * s,
+                            top: 7 * s,
+                            child: Text(
+                              dateStr,
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 14 * s,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF353C49),
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -268,25 +276,33 @@ class _InvestPageState extends State<InvestPage> {
                         color: const Color(0xFFF6F9FE),
                         borderRadius: BorderRadius.circular(10 * s),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Stack(
                         children: [
-                          Container(
-                            width: 15 * s,
-                            height: 15 * s,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF2C6CEB),
-                              shape: BoxShape.circle,
+                          // 체크 아이콘 (left: 179-173=6, top: 350-340=10)
+                          Positioned(
+                            left: 6 * s,
+                            top: 10 * s,
+                            child: Container(
+                              width: 15 * s,
+                              height: 15 * s,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF2C6CEB),
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                          SizedBox(width: 4 * s),
-                          Text(
-                            '인기 검색 코인 제외',
-                            style: GoogleFonts.notoSansKr(
-                              fontSize: 12 * s,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF2C6CEB),
-                              decoration: TextDecoration.none,
+                          // 필터 텍스트 (left: 198-173=25, top: 347-340=7)
+                          Positioned(
+                            left: 25 * s,
+                            top: 7 * s,
+                            child: Text(
+                              '인기 검색 코인 제외',
+                              style: GoogleFonts.notoSansKr(
+                                fontSize: 14 * s,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF2C6CEB),
+                                decoration: TextDecoration.none,
+                              ),
                             ),
                           ),
                         ],
