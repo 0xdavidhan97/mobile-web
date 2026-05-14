@@ -41,35 +41,42 @@ class _InvestPageState extends State<InvestPage> {
     final double topPadding =
         (flutterTop > 0 || !kIsWeb) ? flutterTop : cssSafeAreaTop();
 
-    // 기준 사이즈 414 × 896px 고정: 실제 폭이 414px 초과하면 s=1.0으로 클램프
+    // 414px 기준 폭: 실제 < 414면 화면 폭, ≥ 414면 414로 고정
     final double refWidth =
         MediaQuery.of(context).size.width.clamp(0.0, 414.0);
-    final double s = refWidth / 414.0;
 
     return ThemeColorScope(
       color: '#FFFFFF',
-      child: MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          size: Size(refWidth, MediaQuery.of(context).size.height),
-        ),
-        child: Scaffold(
-          backgroundColor: const Color(0xFFF5F5F5),
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 414),
-              child: Column(
-                children: [
-                  Container(height: topPadding, color: Colors.white),
-                  _buildHeader(s),
-                  _buildTabBar(s),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      physics: const ClampingScrollPhysics(),
-                      child: _buildContent(s),
-                    ),
-                  ),
-                  _buildBottomNav(s, context),
-                ],
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
+        body: Center(
+          child: SizedBox(
+            width: refWidth,
+            height: double.infinity,
+            child: MediaQuery(
+              // 414px 기준 비율을 모든 하위 요소가 MediaQuery로 읽을 수 있게 오버라이드
+              data: MediaQuery.of(context).copyWith(
+                size: Size(refWidth, MediaQuery.of(context).size.height),
+              ),
+              child: Builder(
+                builder: (context) {
+                  final double s =
+                      MediaQuery.of(context).size.width / 414.0;
+                  return Column(
+                    children: [
+                      Container(height: topPadding, color: Colors.white),
+                      _buildHeader(s),
+                      _buildTabBar(s),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          physics: const ClampingScrollPhysics(),
+                          child: _buildContent(s),
+                        ),
+                      ),
+                      _buildBottomNav(s, context),
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -325,14 +332,13 @@ class _InvestPageState extends State<InvestPage> {
                         name: _rankData[i].$2,
                         symbol: _rankData[i].$3,
                         english: _rankData[i].$4,
-                        s: s,
                       ),
                     ),
                   // 이전 버튼 (top: 969-255=714, left: 44-16=28)
                   Positioned(
                     top: 714 * s,
                     left: 28 * s,
-                    child: _PaginationButton(label: '<', s: s),
+                    child: _PaginationButton(label: '<'),
                   ),
                   // 현재 페이지 (top: 962-255=707, left: 193-16=177)
                   Positioned(
@@ -366,7 +372,7 @@ class _InvestPageState extends State<InvestPage> {
                   Positioned(
                     top: 714 * s,
                     left: 318 * s,
-                    child: _PaginationButton(label: '>', s: s),
+                    child: _PaginationButton(label: '>'),
                   ),
                 ],
               ),
@@ -482,18 +488,18 @@ class _RankItem extends StatelessWidget {
   final String name;
   final String symbol;
   final String english;
-  final double s;
 
   const _RankItem({
     required this.rank,
     required this.name,
     required this.symbol,
     required this.english,
-    required this.s,
   });
 
   @override
   Widget build(BuildContext context) {
+    // 오버라이드된 MediaQuery에서 414px 기준 s 계산
+    final double s = MediaQuery.of(context).size.width / 414.0;
     // 좌표는 카드 기준 (카드 left=16, 화면-절대 left에서 16 차감)
     return SizedBox(
       height: 52 * s,
@@ -575,12 +581,12 @@ class _RankItem extends StatelessWidget {
 
 class _PaginationButton extends StatelessWidget {
   final String label;
-  final double s;
 
-  const _PaginationButton({required this.label, required this.s});
+  const _PaginationButton({required this.label});
 
   @override
   Widget build(BuildContext context) {
+    final double s = MediaQuery.of(context).size.width / 414.0;
     return Container(
       width: 36 * s,
       height: 36 * s,
