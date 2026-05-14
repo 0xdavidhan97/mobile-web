@@ -56,3 +56,8 @@ flutter:
     - assets/business_main.png
     - assets/rank_main.png
     - "assets/출석 rocket.png"
+    - assets/home_click.png
+    - assets/community_click.png
+    - assets/rocket_click.png
+    - assets/clock_click.png
+    - assets/chart_click.png
