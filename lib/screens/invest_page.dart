@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,14 +7,29 @@ import '../utils/pwa_utils.dart';
 import '../utils/theme_color.dart';
 
 class InvestPage extends StatefulWidget {
-  const InvestPage({super.key});
+  /// 바로가기로 진입한 경우에만 카운트다운 노출
+  final bool fromShortcut;
+  const InvestPage({super.key, this.fromShortcut = true});
 
   @override
   State<InvestPage> createState() => _InvestPageState();
 }
 
-class _InvestPageState extends State<InvestPage> {
+class _InvestPageState extends State<InvestPage>
+    with SingleTickerProviderStateMixin {
   int _selectedTab = 0;
+
+  // ── 카운트다운 상태 ─────────────────────────────────────────────────────
+  int _countdownSeconds = 10;
+  bool _isScrolling = false;
+  bool _isAchieved = false;
+
+  Timer? _countdownTimer;
+  Timer? _scrollStopTimer;
+
+  late final ScrollController _scrollController;
+  late final AnimationController _floatController;
+  late final Animation<double> _floatAnim;
 
   // (label, left) — 375px 디자인 기준
   static const List<(String, double)> _tabs = [
@@ -36,6 +53,61 @@ class _InvestPageState extends State<InvestPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()..addListener(_onScroll);
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _floatAnim = Tween<double>(begin: -1.0, end: 1.0).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _floatController.dispose();
+    _countdownTimer?.cancel();
+    _scrollStopTimer?.cancel();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_isAchieved || !widget.fromShortcut) return;
+    if (!_isScrolling) {
+      setState(() => _isScrolling = true);
+      _startCountdownTimer();
+    }
+    _scrollStopTimer?.cancel();
+    _scrollStopTimer = Timer(const Duration(milliseconds: 200), () {
+      if (!mounted) return;
+      setState(() => _isScrolling = false);
+      _countdownTimer?.cancel();
+    });
+  }
+
+  void _startCountdownTimer() {
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
+      setState(() {
+        if (_countdownSeconds > 0) _countdownSeconds--;
+        if (_countdownSeconds == 0) {
+          _isAchieved = true;
+          _isScrolling = false;
+          t.cancel();
+          _scrollStopTimer?.cancel();
+        }
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Safe Area: MediaQuery.padding 사용, 웹 fallback은 cssSafeAreaTop()
     final double flutterTop = MediaQuery.of(context).padding.top;
@@ -50,20 +122,32 @@ class _InvestPageState extends State<InvestPage> {
       color: '#FFFFFF',
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
-        body: Column(
+        body: Stack(
           children: [
-            // Top safe area
-            Container(height: topSafe, color: Colors.white),
-            // header1
-            _buildHeader(s),
-            // header2 (탭 네비게이션)
-            _buildTabBar(s),
-            // 콘텐츠 (스크롤)
-            Expanded(child: _buildContent(s)),
-            // 하단 네비게이션
-            _buildBottomNav(s, context),
-            // Bottom safe area
-            SizedBox(height: bottomSafe),
+            Column(
+              children: [
+                // Top safe area
+                Container(height: topSafe, color: Colors.white),
+                // header1
+                _buildHeader(s),
+                // header2 (탭 네비게이션)
+                _buildTabBar(s),
+                // 콘텐츠 (스크롤)
+                Expanded(child: _buildContent(s)),
+                // 하단 네비게이션
+                _buildBottomNav(s, context),
+                // Bottom safe area
+                SizedBox(height: bottomSafe),
+              ],
+            ),
+            // 카운트다운 오버레이 (하단 네비 바로 위)
+            if (widget.fromShortcut && !_isAchieved)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: bottomSafe + (52 * s) + (16 * s),
+                child: Center(child: _buildCountdownBar(s)),
+              ),
           ],
         ),
       ),
@@ -149,6 +233,7 @@ class _InvestPageState extends State<InvestPage> {
 
     // 콘텐츠 영역은 CSS top 104(탭바 끝) ~ 1018(네비 시작), 높이 914
     return SingleChildScrollView(
+      controller: _scrollController,
       physics: const ClampingScrollPhysics(),
       child: SizedBox(
         width: double.infinity,
@@ -379,6 +464,76 @@ class _InvestPageState extends State<InvestPage> {
         color: isActive ? const Color(0xFF124FC7) : const Color(0xFF353C49),
         decoration: TextDecoration.none,
       );
+
+  Widget _buildCountdownBar(double s) {
+    final bool active = _isScrolling;
+    return AnimatedBuilder(
+      animation: _floatAnim,
+      builder: (context, child) => Transform.translate(
+        offset: Offset(0, _floatAnim.value),
+        child: child,
+      ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        width: (active ? 81 : 206) * s,
+        height: 32 * s,
+        decoration: BoxDecoration(
+          color: active
+              ? const Color(0xFFE0ECFF)
+              : const Color(0xFFFFF7E2).withValues(alpha: 0.8),
+          border: Border.all(
+            color: active
+                ? const Color(0xFF69B7FF)
+                : const Color(0xFFFFD971),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(20 * s),
+        ),
+        alignment: Alignment.center,
+        child: ClipRect(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$_countdownSeconds초',
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: active
+                      ? const Color(0xFF4A85F9)
+                      : const Color(0xFFE99C1F),
+                  decoration: TextDecoration.none,
+                ),
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: active
+                    ? const SizedBox.shrink(key: ValueKey('empty'))
+                    : Row(
+                        key: const ValueKey('pause-text'),
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(width: 6 * s),
+                          Text(
+                            '멈추지 말고 더 둘러보세요!',
+                            style: GoogleFonts.notoSansKr(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF707070),
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildBottomNav(double s, BuildContext context) {
     // 네비는 CSS top 1018, height 52
