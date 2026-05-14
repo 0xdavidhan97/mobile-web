@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -17,7 +18,7 @@ class InvestPage extends StatefulWidget {
 }
 
 class _InvestPageState extends State<InvestPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   int _selectedTab = 0;
 
   // ── 카운트다운 상태 ─────────────────────────────────────────────────────
@@ -29,11 +30,14 @@ class _InvestPageState extends State<InvestPage>
 
   Timer? _countdownTimer;
   Timer? _scrollStopTimer;
-  Timer? _successHideTimer;
 
   late final ScrollController _scrollController;
   late final AnimationController _floatController;
   late final Animation<double> _floatAnim;
+
+  // 폭죽 애니메이션
+  late final AnimationController _celebrationController;
+  List<_Particle> _particles = const [];
 
   // (label, left) — 375px 디자인 기준
   static const List<(String, double)> _tabs = [
@@ -67,16 +71,42 @@ class _InvestPageState extends State<InvestPage>
     _floatAnim = Tween<double>(begin: -1.0, end: 1.0).animate(
       CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
     );
+    _celebrationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     _floatController.dispose();
+    _celebrationController.dispose();
     _countdownTimer?.cancel();
     _scrollStopTimer?.cancel();
-    _successHideTimer?.cancel();
     super.dispose();
+  }
+
+  List<_Particle> _generateParticles() {
+    final rng = Random();
+    const colors = [
+      Color(0xFFFF6B6B), // red
+      Color(0xFFFFD93D), // yellow
+      Color(0xFF6BCF7F), // green
+      Color(0xFF4D96FF), // blue
+      Color(0xFFFF8FB1), // pink
+      Color(0xFFB983FF), // purple
+      Color(0xFFFFA94D), // orange
+    ];
+    return List.generate(40, (_) {
+      return _Particle(
+        angle: rng.nextDouble() * 2 * pi,
+        speed: 90 + rng.nextDouble() * 180,
+        gravity: 250 + rng.nextDouble() * 180,
+        color: colors[rng.nextInt(colors.length)],
+        radius: 3 + rng.nextDouble() * 4,
+      );
+    });
   }
 
   void _onScroll() {
@@ -94,6 +124,16 @@ class _InvestPageState extends State<InvestPage>
       if (!mounted) return;
       setState(() => _isScrolling = false);
       _countdownTimer?.cancel();
+    });
+  }
+
+  void _triggerCelebration() {
+    HapticFeedback.lightImpact();
+    _particles = _generateParticles();
+    _celebrationController.reset();
+    _celebrationController.forward().then((_) {
+      if (!mounted) return;
+      setState(() => _isSuccessVisible = false);
     });
   }
 
@@ -115,14 +155,7 @@ class _InvestPageState extends State<InvestPage>
         }
       });
       if (_isAchieved) {
-        // light haptic
-        HapticFeedback.lightImpact();
-        // 2초 후 미션 성공 UI 자동 제거
-        _successHideTimer?.cancel();
-        _successHideTimer = Timer(const Duration(seconds: 2), () {
-          if (!mounted) return;
-          setState(() => _isSuccessVisible = false);
-        });
+        _triggerCelebration();
       }
     });
   }
@@ -160,15 +193,70 @@ class _InvestPageState extends State<InvestPage>
                 SizedBox(height: bottomSafe),
               ],
             ),
-            // 카운트다운 / 미션 성공 오버레이 (하단 네비 바로 위)
-            if (widget.fromShortcut && (!_isAchieved || _isSuccessVisible))
+            // 카운트다운 오버레이 (하단 네비 바로 위) — 달성 전까지만
+            if (widget.fromShortcut && !_isAchieved)
               Positioned(
                 left: 0,
                 right: 0,
                 bottom: bottomSafe + (52 * s) + (16 * s),
                 child: Center(child: _buildCountdownBar(s)),
               ),
+            // 미션 완료 폭죽 오버레이 (전체 화면 중앙)
+            if (_isSuccessVisible) _buildCelebrationOverlay(),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCelebrationOverlay() {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _celebrationController,
+          builder: (context, _) {
+            final t = _celebrationController.value;
+            // 텍스트 스케일: 초반에 팝업, 끝에 약간 페이드
+            final scale = t < 0.25
+                ? Curves.elasticOut.transform(t / 0.25)
+                : 1.0;
+            final textOpacity = t < 0.85 ? 1.0 : (1.0 - (t - 0.85) / 0.15);
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                // 폭죽 파티클
+                CustomPaint(
+                  painter: _FireworkPainter(
+                    progress: t,
+                    particles: _particles,
+                  ),
+                  size: Size.infinite,
+                ),
+                // "미션 완료!" 텍스트
+                Opacity(
+                  opacity: textOpacity.clamp(0.0, 1.0),
+                  child: Transform.scale(
+                    scale: scale.clamp(0.0, 1.2),
+                    child: Text(
+                      '미션 완료!',
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFF1A1E27),
+                        decoration: TextDecoration.none,
+                        shadows: [
+                          Shadow(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            blurRadius: 12,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -487,21 +575,7 @@ class _InvestPageState extends State<InvestPage>
 
   Widget _buildCountdownBar(double s) {
     // 진입 직후(스크롤 전)는 active 상태 유지 (하늘색 + "10초" 고정)
-    final bool success = _isAchieved;
-    final bool active = !success && (!_hasScrolled || _isScrolling);
-
-    // 상태별 스타일
-    final double widthDp = success ? 185 : (active ? 81 : 206);
-    final Color bgColor = success
-        ? const Color(0xFFE0E0E0).withValues(alpha: 0.7)
-        : active
-            ? const Color(0xFFE0ECFF)
-            : const Color(0xFFFFF7E2).withValues(alpha: 0.8);
-    final Color borderColor = success
-        ? const Color(0xFF939393)
-        : active
-            ? const Color(0xFF69B7FF)
-            : const Color(0xFFFFD971);
+    final bool active = !_hasScrolled || _isScrolling;
 
     return AnimatedBuilder(
       animation: _floatAnim,
@@ -512,58 +586,54 @@ class _InvestPageState extends State<InvestPage>
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        width: widthDp * s,
+        width: (active ? 81 : 206) * s,
         height: 32 * s,
         decoration: BoxDecoration(
-          color: bgColor,
-          border: Border.all(color: borderColor, width: 1),
+          color: active
+              ? const Color(0xFFE0ECFF)
+              : const Color(0xFFFFF7E2).withValues(alpha: 0.8),
+          border: Border.all(
+            color: active
+                ? const Color(0xFF69B7FF)
+                : const Color(0xFFFFD971),
+            width: 1,
+          ),
           borderRadius: BorderRadius.circular(20 * s),
         ),
         alignment: Alignment.center,
         child: ClipRect(
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
-            child: success
-                ? Text(
-                    '미션 성공!',
-                    key: const ValueKey('success'),
+            child: Row(
+              key: ValueKey(active ? 'active' : 'pause'),
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$_countdownSeconds초',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: active
+                        ? const Color(0xFF4A85F9)
+                        : const Color(0xFFE99C1F),
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+                if (!active) ...[
+                  SizedBox(width: 6 * s),
+                  Text(
+                    '멈추지 말고 더 둘러보세요!',
                     style: GoogleFonts.notoSansKr(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF7E7E7E),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF707070),
                       decoration: TextDecoration.none,
                     ),
-                  )
-                : Row(
-                    key: ValueKey(active ? 'active' : 'pause'),
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '$_countdownSeconds초',
-                        style: GoogleFonts.notoSansKr(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: active
-                              ? const Color(0xFF4A85F9)
-                              : const Color(0xFFE99C1F),
-                          decoration: TextDecoration.none,
-                        ),
-                      ),
-                      if (!active) ...[
-                        SizedBox(width: 6 * s),
-                        Text(
-                          '멈추지 말고 더 둘러보세요!',
-                          style: GoogleFonts.notoSansKr(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF707070),
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      ],
-                    ],
                   ),
+                ],
+              ],
+            ),
           ),
         ),
       ),
@@ -797,4 +867,52 @@ class _PaginationButton extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── 폭죽 파티클 ────────────────────────────────────────────────────────────
+
+class _Particle {
+  final double angle;   // 발사 각도 (rad)
+  final double speed;   // 발사 속도 (px)
+  final double gravity; // 중력 (px, t² 적용)
+  final Color color;
+  final double radius;
+
+  const _Particle({
+    required this.angle,
+    required this.speed,
+    required this.gravity,
+    required this.color,
+    required this.radius,
+  });
+}
+
+class _FireworkPainter extends CustomPainter {
+  final double progress; // 0.0 ~ 1.0
+  final List<_Particle> particles;
+
+  _FireworkPainter({required this.progress, required this.particles});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (particles.isEmpty) return;
+    final center = Offset(size.width / 2, size.height / 2);
+    final t = progress.clamp(0.0, 1.0);
+    // 70% 까지는 풀 알파 유지, 이후 페이드
+    final alpha = t < 0.7 ? 1.0 : (1.0 - (t - 0.7) / 0.3).clamp(0.0, 1.0);
+
+    for (final p in particles) {
+      final dx = cos(p.angle) * p.speed * t;
+      final dy = sin(p.angle) * p.speed * t + p.gravity * t * t;
+      final pos = center + Offset(dx, dy);
+      final paint = Paint()
+        ..color = p.color.withValues(alpha: alpha)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(pos, p.radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_FireworkPainter old) =>
+      old.progress != progress || old.particles != particles;
 }
