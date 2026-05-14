@@ -219,19 +219,24 @@ class _InvestPageState extends State<InvestPage> {
                         ),
                       ),
                     ),
-                    // 순위 리스트 1~10위 (1위 CSS top 330 → 카드 기준 134, 간격 52)
-                    for (int i = 0; i < _rankData.length; i++)
-                      Positioned(
-                        top: (134 + i * 52) * s,
-                        left: 11 * s, // CSS left 27 → 카드 기준 11
-                        child: _RankItem(
-                          rank: _rankData[i].$1,
-                          name: _rankData[i].$2,
-                          symbol: _rankData[i].$3,
-                          english: _rankData[i].$4,
-                          s: s,
-                        ),
+                    // 순위 리스트 1~10위 (1위 CSS top 330 → 카드 기준 134부터 Column으로 적층)
+                    Positioned(
+                      top: 134 * s,
+                      left: 11 * s, // CSS left 27 → 카드 기준 11
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (int i = 0; i < _rankData.length; i++)
+                            _RankItem(
+                              rank: _rankData[i].$1,
+                              name: _rankData[i].$2,
+                              symbol: _rankData[i].$3,
+                              english: _rankData[i].$4,
+                              s: s,
+                            ),
+                        ],
                       ),
+                    ),
                     // 이전 버튼 (CSS top 909 → 713, left 23 → 7)
                     Positioned(
                       top: 713 * s,
@@ -437,32 +442,34 @@ class _RankItem extends StatelessWidget {
               height: 32 * s,
             ),
           ),
-          // 코인명 (CSS left 111 → 84)
+          // 코인명 + 심볼 (코인명 우측에 심볼이 자동으로 붙도록 Row 처리)
           Positioned(
             left: 84 * s,
             top: 10 * s,
-            child: Text(
-              name,
-              style: GoogleFonts.notoSansKr(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF353C49),
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
-          // 심볼 (CSS left 146 → 119)
-          Positioned(
-            left: 119 * s,
-            top: 11 * s,
-            child: Text(
-              symbol,
-              style: GoogleFonts.notoSansKr(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF697483),
-                decoration: TextDecoration.none,
-              ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF353C49),
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+                SizedBox(width: 4 * s),
+                Text(
+                  symbol,
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF697483),
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ],
             ),
           ),
           // 영문명 (CSS left 111 → 84, 코인명 아래)
