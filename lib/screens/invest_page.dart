@@ -70,7 +70,7 @@ class _InvestPageState extends State<InvestPage> {
             child: Text(
               '투자정보',
               style: GoogleFonts.notoSansKr(
-                fontSize: 18 * s,
+                fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: const Color(0xFF1A1E27),
                 decoration: TextDecoration.none,
@@ -100,7 +100,7 @@ class _InvestPageState extends State<InvestPage> {
                 child: Text(
                   _tabs[i].$1,
                   style: GoogleFonts.notoSansKr(
-                    fontSize: 15 * s,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: _selectedTab == i
                         ? Colors.white
@@ -121,7 +121,7 @@ class _InvestPageState extends State<InvestPage> {
         child: Text(
           '준비 중입니다.',
           style: GoogleFonts.notoSansKr(
-            fontSize: 15 * s,
+            fontSize: 15,
             color: const Color(0xFF697483),
           ),
         ),
@@ -143,7 +143,7 @@ class _InvestPageState extends State<InvestPage> {
               child: Text(
                 '검색트렌드',
                 style: GoogleFonts.notoSansKr(
-                  fontSize: 18 * s,
+                  fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1A1E27),
                   decoration: TextDecoration.none,
@@ -157,7 +157,7 @@ class _InvestPageState extends State<InvestPage> {
               child: Text(
                 '업비트·빗썸 상장코인 · 국내 포털사이트 검색 기준',
                 style: GoogleFonts.notoSansKr(
-                  fontSize: 14 * s,
+                  fontSize: 14,
                   fontWeight: FontWeight.w400,
                   color: const Color(0xFF697483),
                   decoration: TextDecoration.none,
@@ -184,7 +184,7 @@ class _InvestPageState extends State<InvestPage> {
                       child: Text(
                         '인기 검색 순위',
                         style: GoogleFonts.notoSansKr(
-                          fontSize: 16 * s,
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF1A1E27),
                           decoration: TextDecoration.none,
@@ -198,7 +198,7 @@ class _InvestPageState extends State<InvestPage> {
                       child: Text(
                         '일일 검색량 기준 가장 많이 검색된 코인 순위',
                         style: GoogleFonts.notoSansKr(
-                          fontSize: 13 * s,
+                          fontSize: 13,
                           fontWeight: FontWeight.w400,
                           color: const Color(0xFF697483),
                           decoration: TextDecoration.none,
@@ -216,7 +216,7 @@ class _InvestPageState extends State<InvestPage> {
   }
 
   TextStyle _navLabelStyle(double s, bool isActive) => GoogleFonts.notoSansKr(
-        fontSize: 10 * s,
+        fontSize: 10,
         fontWeight: FontWeight.w400,
         color: isActive ? const Color(0xFF124FC7) : const Color(0xFF353C49),
         decoration: TextDecoration.none,
