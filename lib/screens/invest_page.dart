@@ -142,6 +142,11 @@ class _InvestPageState extends State<InvestPage> {
       );
     }
 
+    // 오늘 날짜 (날짜 필터 버튼 텍스트)
+    final now = DateTime.now();
+    final dateStr =
+        '${now.year}. ${now.month.toString().padLeft(2, '0')}. ${now.day.toString().padLeft(2, '0')}';
+
     // 콘텐츠 영역은 CSS top 104(탭바 끝) ~ 1018(네비 시작), 높이 914
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
@@ -216,6 +221,87 @@ class _InvestPageState extends State<InvestPage> {
                           fontWeight: FontWeight.w400,
                           color: const Color(0xFF697483),
                           decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                    // 날짜 필터 버튼 Rectangle 1472 (CSS top 277 → 81, left 32 → 16)
+                    Positioned(
+                      top: 81 * s,
+                      left: 16 * s,
+                      child: Container(
+                        width: 119 * s,
+                        height: 36 * s,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF2F2F2),
+                          borderRadius: BorderRadius.circular(10 * s),
+                        ),
+                        child: Stack(
+                          children: [
+                            // 날짜 텍스트 (CSS left 52 → 버튼 기준 20, top 284 → 7)
+                            Positioned(
+                              left: 20 * s,
+                              top: 7 * s,
+                              child: Text(
+                                dateStr,
+                                style: GoogleFonts.notoSansKr(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF353C49),
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // 코인 제외 필터 버튼 Rectangle 1471 (CSS top 277 → 81, left 165 → 149)
+                    Positioned(
+                      top: 81 * s,
+                      left: 149 * s,
+                      child: Container(
+                        width: 147 * s,
+                        height: 36 * s,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF6F9FE),
+                          borderRadius: BorderRadius.circular(10 * s),
+                        ),
+                        child: Stack(
+                          children: [
+                            // 체크 아이콘 원형 Ellipse 40 (CSS left 171 → 버튼 기준 6, top 287 → 10, 15×15)
+                            Positioned(
+                              left: 6 * s,
+                              top: 10 * s,
+                              child: Container(
+                                width: 15 * s,
+                                height: 15 * s,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF2C6CEB),
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.check,
+                                  size: 10 * s,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            // 필터 텍스트 (CSS left 190 → 버튼 기준 25, top 284 → 7)
+                            Positioned(
+                              left: 25 * s,
+                              top: 7 * s,
+                              child: Text(
+                                '인기 검색 코인 제외',
+                                style: GoogleFonts.notoSansKr(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF2C6CEB),
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
