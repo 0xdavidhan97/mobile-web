@@ -21,6 +21,7 @@ class _InvestPageState extends State<InvestPage>
 
   // ── 카운트다운 상태 ─────────────────────────────────────────────────────
   int _countdownSeconds = 10;
+  bool _hasScrolled = false; // 진입 후 한 번이라도 스크롤했는지
   bool _isScrolling = false;
   bool _isAchieved = false;
 
@@ -76,12 +77,16 @@ class _InvestPageState extends State<InvestPage>
 
   void _onScroll() {
     if (_isAchieved || !widget.fromShortcut) return;
-    if (!_isScrolling) {
-      setState(() => _isScrolling = true);
+    if (!_hasScrolled || !_isScrolling) {
+      setState(() {
+        _hasScrolled = true;
+        _isScrolling = true;
+      });
       _startCountdownTimer();
     }
     _scrollStopTimer?.cancel();
-    _scrollStopTimer = Timer(const Duration(milliseconds: 200), () {
+    // 스크롤 멈춤 감지: 1초 딜레이 후 일시정지(노란색) 전환
+    _scrollStopTimer = Timer(const Duration(seconds: 1), () {
       if (!mounted) return;
       setState(() => _isScrolling = false);
       _countdownTimer?.cancel();
@@ -466,7 +471,8 @@ class _InvestPageState extends State<InvestPage>
       );
 
   Widget _buildCountdownBar(double s) {
-    final bool active = _isScrolling;
+    // 진입 직후(스크롤 전)는 active 상태 유지 (하늘색 + "10초" 고정)
+    final bool active = !_hasScrolled || _isScrolling;
     return AnimatedBuilder(
       animation: _floatAnim,
       builder: (context, child) => Transform.translate(
