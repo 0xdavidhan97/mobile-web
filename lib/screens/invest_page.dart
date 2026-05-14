@@ -26,7 +26,6 @@ class _InvestPageState extends State<InvestPage>
   bool _hasScrolled = false; // 진입 후 한 번이라도 스크롤했는지
   bool _isScrolling = false;
   bool _isAchieved = false;
-  bool _isSuccessVisible = false; // 미션 성공 UI 표시 중
 
   Timer? _countdownTimer;
   Timer? _scrollStopTimer;
@@ -35,9 +34,8 @@ class _InvestPageState extends State<InvestPage>
   late final AnimationController _floatController;
   late final Animation<double> _floatAnim;
 
-  // 폭죽 애니메이션
-  late final AnimationController _celebrationController;
-  List<_Particle> _particles = const [];
+  // 이모지 버스트 오버레이 엔트리
+  OverlayEntry? _celebrationEntry;
 
   // (label, left) — 375px 디자인 기준
   static const List<(String, double)> _tabs = [
@@ -71,42 +69,17 @@ class _InvestPageState extends State<InvestPage>
     _floatAnim = Tween<double>(begin: -1.0, end: 1.0).animate(
       CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
     );
-    _celebrationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    );
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     _floatController.dispose();
-    _celebrationController.dispose();
     _countdownTimer?.cancel();
     _scrollStopTimer?.cancel();
+    _celebrationEntry?.remove();
+    _celebrationEntry = null;
     super.dispose();
-  }
-
-  List<_Particle> _generateParticles() {
-    final rng = Random();
-    const colors = [
-      Color(0xFFFF6B6B), // red
-      Color(0xFFFFD93D), // yellow
-      Color(0xFF6BCF7F), // green
-      Color(0xFF4D96FF), // blue
-      Color(0xFFFF8FB1), // pink
-      Color(0xFFB983FF), // purple
-      Color(0xFFFFA94D), // orange
-    ];
-    return List.generate(40, (_) {
-      return _Particle(
-        angle: rng.nextDouble() * 2 * pi,
-        speed: 90 + rng.nextDouble() * 180,
-        gravity: 250 + rng.nextDouble() * 180,
-        color: colors[rng.nextInt(colors.length)],
-        radius: 3 + rng.nextDouble() * 4,
-      );
-    });
   }
 
   void _onScroll() {
@@ -129,11 +102,28 @@ class _InvestPageState extends State<InvestPage>
 
   void _triggerCelebration() {
     HapticFeedback.lightImpact();
-    _particles = _generateParticles();
-    _celebrationController.reset();
-    _celebrationController.forward().then((_) {
-      if (!mounted) return;
-      setState(() => _isSuccessVisible = false);
+
+    // 카운트다운 pill이 있던 위치 계산
+    final screenSize = MediaQuery.of(context).size;
+    final bottomSafe = MediaQuery.of(context).padding.bottom;
+    final s = screenSize.width / 375.0;
+    // pill: bottom = bottomSafe + 52*s + 16*s, pill 높이 32*s → 중심은 + 16*s 위
+    final burstY =
+        screenSize.height - (bottomSafe + 52 * s + 16 * s + 16 * s);
+    final burstX = screenSize.width / 2;
+
+    final entry = OverlayEntry(
+      builder: (_) => _SuccessOverlay(
+        burstOrigin: Offset(burstX, burstY),
+      ),
+    );
+    _celebrationEntry = entry;
+    Overlay.of(context).insert(entry);
+
+    // 최대 애니메이션 길이(이모지 1.2s + 토스트 딜레이 0.3s + 토스트 1.5s) 후 제거
+    Future.delayed(const Duration(milliseconds: 2100), () {
+      _celebrationEntry?.remove();
+      _celebrationEntry = null;
     });
   }
 
@@ -149,7 +139,6 @@ class _InvestPageState extends State<InvestPage>
         if (_countdownSeconds == 0) {
           _isAchieved = true;
           _isScrolling = false;
-          _isSuccessVisible = true;
           t.cancel();
           _scrollStopTimer?.cancel();
         }
@@ -201,62 +190,7 @@ class _InvestPageState extends State<InvestPage>
                 bottom: bottomSafe + (52 * s) + (16 * s),
                 child: Center(child: _buildCountdownBar(s)),
               ),
-            // 미션 완료 폭죽 오버레이 (전체 화면 중앙)
-            if (_isSuccessVisible) _buildCelebrationOverlay(),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCelebrationOverlay() {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: AnimatedBuilder(
-          animation: _celebrationController,
-          builder: (context, _) {
-            final t = _celebrationController.value;
-            // 텍스트 스케일: 초반에 팝업, 끝에 약간 페이드
-            final scale = t < 0.25
-                ? Curves.elasticOut.transform(t / 0.25)
-                : 1.0;
-            final textOpacity = t < 0.85 ? 1.0 : (1.0 - (t - 0.85) / 0.15);
-            return Stack(
-              alignment: Alignment.center,
-              children: [
-                // 폭죽 파티클
-                CustomPaint(
-                  painter: _FireworkPainter(
-                    progress: t,
-                    particles: _particles,
-                  ),
-                  size: Size.infinite,
-                ),
-                // "미션 완료!" 텍스트
-                Opacity(
-                  opacity: textOpacity.clamp(0.0, 1.0),
-                  child: Transform.scale(
-                    scale: scale.clamp(0.0, 1.2),
-                    child: Text(
-                      '미션 완료!',
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                        color: const Color(0xFF1A1E27),
-                        decoration: TextDecoration.none,
-                        shadows: [
-                          Shadow(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            blurRadius: 12,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
         ),
       ),
     );
@@ -869,50 +803,215 @@ class _PaginationButton extends StatelessWidget {
   }
 }
 
-// ── 폭죽 파티클 ────────────────────────────────────────────────────────────
+// ── 이모지 버스트 ──────────────────────────────────────────────────────────
 
-class _Particle {
-  final double angle;   // 발사 각도 (rad)
-  final double speed;   // 발사 속도 (px)
-  final double gravity; // 중력 (px, t² 적용)
-  final Color color;
-  final double radius;
+class _EmojiParticle {
+  final String emoji;
+  final double angle;    // 발사 각도 (rad)
+  final double distance; // 최대 이동 거리 (px)
+  final double size;     // 폰트 크기 (px)
+  final double rotation; // 최대 회전 (rad)
+  final double delay;    // 시작 지연 비율 (0~0.2)
+  final double duration; // 본인 애니메이션 길이 비율 (0.57~0.86 of 1.4s = 0.8~1.2s)
 
-  const _Particle({
+  const _EmojiParticle({
+    required this.emoji,
     required this.angle,
-    required this.speed,
-    required this.gravity,
-    required this.color,
-    required this.radius,
+    required this.distance,
+    required this.size,
+    required this.rotation,
+    required this.delay,
+    required this.duration,
   });
 }
 
-class _FireworkPainter extends CustomPainter {
-  final double progress; // 0.0 ~ 1.0
-  final List<_Particle> particles;
+class _EmojiBurstPainter extends CustomPainter {
+  final double progress; // 0.0 ~ 1.0 (전체 컨트롤러)
+  final Offset origin;
+  final List<_EmojiParticle> particles;
 
-  _FireworkPainter({required this.progress, required this.particles});
+  _EmojiBurstPainter({
+    required this.progress,
+    required this.origin,
+    required this.particles,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (particles.isEmpty) return;
-    final center = Offset(size.width / 2, size.height / 2);
-    final t = progress.clamp(0.0, 1.0);
-    // 70% 까지는 풀 알파 유지, 이후 페이드
-    final alpha = t < 0.7 ? 1.0 : (1.0 - (t - 0.7) / 0.3).clamp(0.0, 1.0);
-
     for (final p in particles) {
-      final dx = cos(p.angle) * p.speed * t;
-      final dy = sin(p.angle) * p.speed * t + p.gravity * t * t;
-      final pos = center + Offset(dx, dy);
-      final paint = Paint()
-        ..color = p.color.withValues(alpha: alpha)
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(pos, p.radius, paint);
+      final localT = ((progress - p.delay) / p.duration).clamp(0.0, 1.0);
+      if (localT <= 0) continue;
+
+      // ease-out cubic
+      final eased = 1 - pow(1 - localT, 3).toDouble();
+
+      final dx = cos(p.angle) * p.distance * eased;
+      final dy = sin(p.angle) * p.distance * eased;
+      final pos = origin + Offset(dx, dy);
+
+      // 50% 까진 풀 알파, 이후 페이드아웃
+      final opacity = localT < 0.5
+          ? 1.0
+          : (1.0 - (localT - 0.5) / 0.5).clamp(0.0, 1.0);
+
+      final rot = p.rotation * eased;
+
+      final tp = TextPainter(
+        text: TextSpan(
+          text: p.emoji,
+          style: TextStyle(fontSize: p.size),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+
+      canvas.save();
+      canvas.translate(pos.dx, pos.dy);
+      canvas.rotate(rot);
+      canvas.translate(-tp.width / 2, -tp.height / 2);
+
+      // 이모지는 자체 색상을 가지므로 saveLayer + alpha 로 페이드
+      canvas.saveLayer(
+        Rect.fromLTWH(0, 0, tp.width, tp.height),
+        Paint()..color = Colors.white.withValues(alpha: opacity),
+      );
+      tp.paint(canvas, Offset.zero);
+      canvas.restore();
+
+      canvas.restore();
     }
   }
 
   @override
-  bool shouldRepaint(_FireworkPainter old) =>
-      old.progress != progress || old.particles != particles;
+  bool shouldRepaint(_EmojiBurstPainter old) =>
+      old.progress != progress || old.origin != origin;
+}
+
+// ── 미션 성공 오버레이 (이모지 버스트 + 토스트) ────────────────────────────
+
+class _SuccessOverlay extends StatefulWidget {
+  final Offset burstOrigin;
+  const _SuccessOverlay({required this.burstOrigin});
+
+  @override
+  State<_SuccessOverlay> createState() => _SuccessOverlayState();
+}
+
+class _SuccessOverlayState extends State<_SuccessOverlay>
+    with TickerProviderStateMixin {
+  late final AnimationController _burstCtrl;
+  late final AnimationController _toastCtrl;
+  late final List<_EmojiParticle> _particles;
+
+  @override
+  void initState() {
+    super.initState();
+    _particles = _generateParticles();
+    _burstCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..forward();
+    _toastCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) _toastCtrl.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _burstCtrl.dispose();
+    _toastCtrl.dispose();
+    super.dispose();
+  }
+
+  List<_EmojiParticle> _generateParticles() {
+    final rng = Random();
+    const emojis = ['🎊', '🎉', '⭐', '✨', '🌟', '💫', '🎆'];
+    final count = 12 + rng.nextInt(4); // 12~15
+    return List.generate(count, (_) {
+      // 위쪽 가중치: 70%는 상단 반원(-π~0), 30%는 임의 방향
+      final angle = rng.nextDouble() < 0.7
+          ? -pi + rng.nextDouble() * pi // -π ~ 0 (위쪽 반원)
+          : rng.nextDouble() * 2 * pi;
+      return _EmojiParticle(
+        emoji: emojis[rng.nextInt(emojis.length)],
+        angle: angle,
+        distance: 100 + rng.nextDouble() * 150, // 100~250px
+        size: 24 + rng.nextDouble() * 12, // 24~36
+        rotation: (rng.nextDouble() - 0.5) * pi, // -π/2 ~ π/2
+        delay: rng.nextDouble() * 0.15, // 0~0.15 (전체 1.4s 대비)
+        duration: 0.57 + rng.nextDouble() * 0.29, // 0.57~0.86 → 0.8~1.2s
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          // 이모지 버스트 (CustomPainter)
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _burstCtrl,
+              builder: (context, _) => CustomPaint(
+                painter: _EmojiBurstPainter(
+                  progress: _burstCtrl.value,
+                  origin: widget.burstOrigin,
+                  particles: _particles,
+                ),
+                size: Size.infinite,
+              ),
+            ),
+          ),
+          // 미션 성공! 토스트 (이모지 버스트 위치 부근, 약간 위)
+          Positioned(
+            left: 0,
+            right: 0,
+            top: widget.burstOrigin.dy - 20,
+            child: Center(
+              child: AnimatedBuilder(
+                animation: _toastCtrl,
+                builder: (context, _) {
+                  final t = _toastCtrl.value;
+                  // 페이드 인 (0~0.15), 유지 (0.15~0.8), 페이드 아웃 (0.8~1.0)
+                  final opacity = t < 0.15
+                      ? t / 0.15
+                      : (t < 0.8 ? 1.0 : (1.0 - (t - 0.8) / 0.2));
+                  // 등장 시 약간 스케일 업
+                  final scale = t < 0.15 ? 0.85 + (t / 0.15) * 0.15 : 1.0;
+                  return Opacity(
+                    opacity: opacity.clamp(0.0, 1.0),
+                    child: Transform.scale(
+                      scale: scale,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF272727)
+                              .withValues(alpha: 0.92),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Text(
+                          '미션 성공!',
+                          style: GoogleFonts.notoSansKr(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
