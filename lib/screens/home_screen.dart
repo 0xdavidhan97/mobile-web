@@ -6,6 +6,7 @@ import '../widgets/section_card.dart';
 import '../widgets/ranking_card.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../utils/theme_color.dart';
+import 'invest_page.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -32,7 +33,17 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          const BottomNavBar(showSwipeBar: true),
+          BottomNavBar(
+            showSwipeBar: true,
+            onTap: (i) {
+              if (i == 4) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const InvestPage()),
+                );
+              }
+            },
+          ),
         ],
         ),
       ),

@@ -25,8 +25,14 @@ double _cssSafeAreaBottom() {
 class BottomNavBar extends StatelessWidget {
   final int activeIndex;
   final bool showSwipeBar;
+  final void Function(int)? onTap;
 
-  const BottomNavBar({super.key, this.activeIndex = -1, this.showSwipeBar = false});
+  const BottomNavBar({
+    super.key,
+    this.activeIndex = -1,
+    this.showSwipeBar = false,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +65,7 @@ class BottomNavBar extends StatelessWidget {
                   Opacity(
                     opacity: activeIndex == i ? 1.0 : 0.4,
                     child: GestureDetector(
-                      onTap: () {},
+                      onTap: onTap != null ? () => onTap!(i) : null,
                       child: Image.asset(
                         assets[i].$1,
                         width: assets[i].$2 * s,
