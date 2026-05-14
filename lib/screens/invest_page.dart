@@ -40,13 +40,21 @@ class _InvestPageState extends State<InvestPage> {
     final double flutterTop = MediaQuery.of(context).padding.top;
     final double topPadding =
         (flutterTop > 0 || !kIsWeb) ? flutterTop : cssSafeAreaTop();
-    final double s = MediaQuery.of(context).size.width / 414;
+
+    // 기준 사이즈 414 × 896px 고정: 실제 폭이 414px 초과하면 s=1.0으로 클램프
+    final double refWidth =
+        MediaQuery.of(context).size.width.clamp(0.0, 414.0);
+    final double s = refWidth / 414.0;
 
     return ThemeColorScope(
       color: '#FFFFFF',
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
-        body: Column(
+      child: MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          size: Size(refWidth, MediaQuery.of(context).size.height),
+        ),
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF5F5F5),
+          body: Column(
           children: [
             Container(height: topPadding, color: Colors.white),
             _buildHeader(s),
@@ -61,7 +69,8 @@ class _InvestPageState extends State<InvestPage> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildHeader(double s) {
